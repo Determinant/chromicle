@@ -1,0 +1,21 @@
+{
+    "name": "chromicle",
+    "version": "0.1",
+    "description": "Chrome extension to find out your wasted part of life from Google Calendar.",
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_title": "chromicle"
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAopUFqJFPozQrEnkBKa4iUAcJQTpVFfqe2+fiOZXL1NODVFr2w8gE6RriML/gQab99ZQ1CFYYpOHh5VFS+7rdTBwiNr5C01ZlLpfBZuH/RBVHwCxmNdFqmY5vFqMCGWdKWgrMOyvdl+vVNkr0T8aHadiQg18olaAYEqYzz+SDv371DC5IHssL2q+7fP4YsKmmQ1LT6NVpBh8Oq3qUCtAlayRrLOcvDRTyb3iT0RcUMIUlS1lp9otkkn7xopUEwwNAl+od5B4Wklv2iJxJ6mZKWvZDoFyC9Vr44+xdHrqGOFwMLLF1r4FFGFzyvk2bU1QmXkj+4ScX+FvrCZQdfRJ+cwIDAQAB",
+    "oauth2": {
+        "client_id": "17405925155-cs61263jgrsj4kt5usv41riph3oh8mq8.apps.googleusercontent.com",
+        "scopes": ["https://www.googleapis.com/auth/calendar.readonly"]
+    },
+    "permissions": [
+        "identity"
+    ],
+    "manifest_version": 2
+}
