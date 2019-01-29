@@ -30,6 +30,8 @@ import Grid from '@material-ui/core/Grid';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import Logo from './Logo';
 
@@ -85,7 +87,7 @@ function getColors(token) {
 
 function filterPatterns(patterns, calName) {
     return patterns.filter(p => {
-        let re = new RegExp(p.cal);
+        let re = new RegExp(p.cal.regex && p.cal.value || `^${p.cal.value}$`);
         return re.test(calName);
     });
 }
@@ -129,6 +131,12 @@ const styles = theme => ({
     },
     fab: {
         margin: theme.spacing.unit,
+    },
+    fieldNoRegex: {
+        width: 200
+    },
+    fieldRegex: {
+        marginRight: '0.5em'
     }
 });
 
@@ -195,6 +203,77 @@ ChromiclePieChart.propTypes = {
     patterncalendarData: PropTypes.object.isRequired,
 };
 
+class RegexField extends React.Component {
+    render() {
+        var pitems = this.props.items;
+        let items = [];
+        pitems['0'] = {regex: true, label: null, id: '0'};
+        for (let id in pitems)
+        {
+            items.push(
+                <MenuItem key={id} value={id}>
+                    {pitems[id].label != null && pitems[id].label || 'Regex'}
+                </MenuItem>);
+        }
+        return (
+            <span>
+            <Select
+                value={this.props.value.id}
+                onChange={event => {
+                    let value;
+                    if (pitems[event.target.value].label == null) {
+                        if (this.props.value.regex)
+                            value = {regex: true, value: this.props.value.value, label: null, id: '0'};
+                        else
+                            value = {regex: true, value: `^${this.props.value.value}$`, label: null, id: '0'};
+                    } else {
+                        value = pitems[event.target.value];
+                    }
+                    this.props.onChange({target: {value}});
+                }}
+                className={this.props.value.regex &&
+                        this.props.fieldStyles.regex ||
+                        this.props.fieldStyles.noRegex}>{items}</Select>
+            {this.props.value.label == null && (
+                <TextField
+                 value={this.props.value.value}
+                 onChange={event =>
+                    this.props.onChange({target: { value: {regex: true, value: event.target.value, label: null, id: '0'}}})} />
+            )}
+            </span>
+        );
+    }
+}
+
+function CalendarField(props) {
+    let items = {};
+    for (let id in props.cached.calendars) {
+        items[id] = {
+            regex: false,
+            value: props.cached.calendars[id].name,
+            label: props.cached.calendars[id].name, id}
+    }
+    return (
+        <RegexField
+            value={props.value}
+            items={items}
+            fieldStyles={props.fieldStyles}
+            onChange={props.onChange} />);
+}
+
+function EventField(props) {
+    let items = {'any': {
+        regex: true,
+        value: '.*',
+        label: 'Any', id: 'any'}};
+    return (
+        <RegexField
+            value={props.value}
+            items={items}
+            fieldStyles={props.fieldStyles}
+            onChange={props.onChange} />);
+}
+
 class Dashboard extends React.Component {
     state = {
         open: true,
@@ -213,9 +292,9 @@ class Dashboard extends React.Component {
     };
 
     static patternHead = [
-        {label: "Name", field: "name"},
-        {label: "Calendar", field: "cal"},
-        {label: "Event", field: 'event'}];
+        {label: "Name", field: "name", elem: TextField},
+        {label: "Calendar", field: "cal", elem: CalendarField},
+        {label: "Event", field: 'event', elem: EventField}];
 
     handleChangePage = (event, page) => {
         this.setState({ page });
@@ -240,8 +319,10 @@ class Dashboard extends React.Component {
     };
 
     newPattern = () => {
-        let patterns = [{name: '', cal: '', event: '', idx: 0 },
-                        ...this.state.patterns];
+        let patterns = [{name: '',
+            cal: { regex: true, label: null, id: '0' },
+            event: { regex: true, value: '.*', label: 'Any', id: 'any' },
+            idx: 0 }, ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
     	this.setState({ patterns });
@@ -269,7 +350,7 @@ class Dashboard extends React.Component {
                 results[i] = 0;
             for (let id in this.cached.calendars) {
                 let patterns = filterPatterns(this.state.patterns, this.cached.calendars[id].name)
-                    .map(p => { return { regex: new RegExp(p.event), idx: p.idx } });
+                    .map(p => { return { regex: new RegExp(p.event.value), idx: p.idx } });
                 if (!this.cached.calendars[id].events) continue;
                 this.cached.calendars[id].events.forEach(event => {
                     if (event.status != "confirmed") return;
@@ -315,8 +396,8 @@ class Dashboard extends React.Component {
             });
             this.setState({ patterns: items.map((item, idx) => {
                 return { name: item.summary,
-                         cal: item.summary,
-                         event: '.*',
+                         cal: { regex: false, value: item.summary, label: item.summary, id: item.id },
+                         event: { regex: true, value: '.*', label: 'Any', id: 'any' },
                          idx }
             })});
         });
@@ -362,12 +443,16 @@ class Dashboard extends React.Component {
                             <TableRow
                              onMouseOver={() => this.setState({ activePattern: p.idx })}
                              onMouseOut={() => this.setState({ activePattern: null })}>
-                              {Dashboard.patternHead.map(s => (
+                                {Dashboard.patternHead.map(s => {
+                                    const CustomText = s.elem;
+                                    return (
                                 <TableCell>
-                                  <TextField
+                                  <CustomText
                                    value={p[s.field]}
+                                   cached={this.cached}
+                                   fieldStyles={{noRegex: classes.fieldNoRegex, regex: classes.fieldRegex}}
                                    onChange={event => this.updatePattern(s.field, p.idx, event.target.value)}/>
-                                  </TableCell>))}
+                                  </TableCell>)})}
                                   <span style={(this.state.activePattern == p.idx &&
                                                   { position: 'absolute', right: 0, height: 48 }) ||
                                                   { display: 'none' }}>
