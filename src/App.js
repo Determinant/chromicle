@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import 'typeface-roboto';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
-import { DateRangePicker, DayPickerRangeController } from 'react-dates';
-import classNames from 'classnames';
+import { DateRangePicker } from 'react-dates';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import orange from '@material-ui/core/colors/orange';
@@ -15,7 +14,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
@@ -87,7 +85,7 @@ function getColors(token) {
 
 function filterPatterns(patterns, calName) {
     return patterns.filter(p => {
-        let re = new RegExp(p.cal.regex && p.cal.value || `^${p.cal.value}$`);
+        let re = new RegExp(p.cal.regex ? p.cal.value : `^${p.cal.value}$`);
         return re.test(calName);
     });
 }
@@ -212,10 +210,12 @@ class RegexField extends React.Component {
         {
             items.push(
                 <MenuItem key={id} value={id}>
-                    {pitems[id].label != null && pitems[id].label || 'Regex'}
+                    {pitems[id].label != null ? pitems[id].label :
+                        <span style={{color: theme.palette.primary.dark}}>Custom</span>}
                 </MenuItem>);
         }
         return (
+            <FormControl>
             <span>
             <Select
                 value={this.props.value.id}
@@ -231,8 +231,8 @@ class RegexField extends React.Component {
                     }
                     this.props.onChange({target: {value}});
                 }}
-                className={this.props.value.regex &&
-                        this.props.fieldStyles.regex ||
+                className={this.props.value.regex ?
+                        this.props.fieldStyles.regex :
                         this.props.fieldStyles.noRegex}>{items}</Select>
             {this.props.value.label == null && (
                 <TextField
@@ -241,6 +241,7 @@ class RegexField extends React.Component {
                     this.props.onChange({target: { value: {regex: true, value: event.target.value, label: null, id: '0'}}})} />
             )}
             </span>
+            </FormControl>
         );
     }
 }
@@ -353,7 +354,7 @@ class Dashboard extends React.Component {
                     .map(p => { return { regex: new RegExp(p.event.value), idx: p.idx } });
                 if (!this.cached.calendars[id].events) continue;
                 this.cached.calendars[id].events.forEach(event => {
-                    if (event.status != "confirmed") return;
+                    if (event.status !== "confirmed") return;
                     patterns.forEach(p => {
                         if (!p.regex.test(event.summary)) return;
                         if (cal_results[id] === undefined) {
@@ -453,7 +454,7 @@ class Dashboard extends React.Component {
                                    fieldStyles={{noRegex: classes.fieldNoRegex, regex: classes.fieldRegex}}
                                    onChange={event => this.updatePattern(s.field, p.idx, event.target.value)}/>
                                   </TableCell>)})}
-                                  <span style={(this.state.activePattern == p.idx &&
+                                  <span style={(this.state.activePattern === p.idx &&
                                                   { position: 'absolute', right: 0, height: 48 }) ||
                                                   { display: 'none' }}>
                                     <DeleteOutlinedIcon
