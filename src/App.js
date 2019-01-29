@@ -1,9 +1,9 @@
+import React from 'react';
+import PropTypes from 'prop-types';
 import 'typeface-roboto';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 import { DateRangePicker, DayPickerRangeController } from 'react-dates';
-import React from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
@@ -28,7 +28,10 @@ import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import Grid from '@material-ui/core/Grid';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
+import AddCircleIcon from '@material-ui/icons/AddCircle';
+import IconButton from '@material-ui/core/IconButton';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import Logo from './Logo';
 
 const default_chart_data = [{name: 'Work', value: 10, color: cyan[300]},
                             {name: 'Wasted', value: 10, color: cyan[300]}];
@@ -92,9 +95,6 @@ const styles = theme => ({
         display: 'flex',
         height: '100vh',
     },
-    icon: {
-        margin: theme.spacing.unit * 2,
-    },
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
         transition: theme.transitions.create(['width', 'margin'], {
@@ -117,11 +117,15 @@ const styles = theme => ({
     buttonSpacer: {
         marginBottom: theme.spacing.unit * 4,
     },
+    patternTableWrapper: {
+        overflowX: 'auto',
+        overflowY: 'hidden'
+    },
     patternTable: {
-        overflowX: 'auto'
+        minWidth: 600
     },
     pieChart: {
-        margin: '0 auto'
+        margin: '0 auto',
     },
     fab: {
         margin: theme.spacing.unit,
@@ -155,21 +159,24 @@ function ChromiclePieChart(props) {
     return (
     <Grid container spacing={0}>
       <Grid item xs={12} lg={6}>
-        <PieChart width={400} height={300} className={props.classes.pieChart}>
+        <div className={props.classes.patternTableWrapper}>
+        <PieChart width={400} height={250} className={props.classes.pieChart}>
           <Pie data={props.patternGraphData}
                cx={200}
-               cy={150}
+               cy={125}
                outerRadius={60}
                fill={deepOrange[300]}
                label={customizedLabel}/>
           <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
         </PieChart>
+        </div>
       </Grid>
       <Grid item xs={12} lg={6}>
-        <PieChart width={400} height={300} className={props.classes.pieChart}>
+        <div className={props.classes.patternTableWrapper}>
+        <PieChart width={400} height={250} className={props.classes.pieChart}>
           <Pie data={props.calendarGraphData}
                cx={200}
-               cy={150}
+               cy={125}
                innerRadius={40}
                outerRadius={70}
                fill={cyan[300]}
@@ -178,6 +185,7 @@ function ChromiclePieChart(props) {
           </Pie>
           <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
         </PieChart>
+        </div>
       </Grid>
     </Grid>);
 }
@@ -229,6 +237,14 @@ class Dashboard extends React.Component {
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
         this.setState({ patterns });
+    };
+
+    newPattern = () => {
+        let patterns = [{name: '', cal: '', event: '', idx: 0 },
+                        ...this.state.patterns];
+        for (let i = 1; i < patterns.length; i++)
+            patterns[i].idx = i;
+    	this.setState({ patterns });
     };
 
     analyze = () => {
@@ -319,7 +335,7 @@ class Dashboard extends React.Component {
            className={classes.appBar}>
             <Toolbar disableGutters={!this.state.open} className={classes.toolbar}>
               <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                Chromicle
+                <Logo style={{width: '2em', verticalAlign: 'bottom', marginRight: '0.2em'}}/>Chromicle
               </Typography>
             </Toolbar>
           </AppBar>
@@ -332,8 +348,12 @@ class Dashboard extends React.Component {
                   <FormGroup>
                     <Typography variant="h6" component="h1" gutterBottom>
                       Event Patterns
+                      <IconButton
+                       style={{marginBottom: '0.12em', marginLeft: '0.5em'}}
+                       onClick={() => this.newPattern()}><AddCircleIcon /></IconButton>
                     </Typography>
-                    <Table>
+                    <div className={classes.patternTableWrapper}>
+                    <Table className={classes.patternTable}>
                       <TableHead>
                         <TableRow>{Dashboard.patternHead.map(s => (<TableCell>{s.label}</TableCell>))}</TableRow>
                       </TableHead>
@@ -352,7 +372,6 @@ class Dashboard extends React.Component {
                                                   { position: 'absolute', right: 0, height: 48 }) ||
                                                   { display: 'none' }}>
                                     <DeleteOutlinedIcon
-                                     className={classes.icon}
                                      style={{ height: '100%', cursor: 'pointer' }}
                                      onClick={() => this.removePattern(p.idx)} />
                                   </span>
@@ -363,6 +382,7 @@ class Dashboard extends React.Component {
                             </TableRow>)}
                       </TableBody>
                     </Table>
+                    </div>
                     <TablePagination
                        rowsPerPageOptions={[5, 10, 25]}
                        component="div"
