@@ -4,11 +4,10 @@ import 'typeface-roboto';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 import { DateRangePicker } from 'react-dates';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import orange from '@material-ui/core/colors/orange';
 import cyan from '@material-ui/core/colors/cyan';
-import deepOrange from '@material-ui/core/colors/deepOrange';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -28,15 +27,14 @@ import Grid from '@material-ui/core/Grid';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import Logo from './Logo';
+import * as gapi from './gapi';
+import { Pattern, PatternEntry } from './pattern';
+import PieChart from './Chart';
+import { CalendarField, EventField } from './RegexField';
 
 const default_chart_data = [{name: 'Work', value: 10, color: cyan[300]},
                             {name: 'Wasted', value: 10, color: cyan[300]}];
-
-const gapi_base = 'https://www.googleapis.com/calendar/v3';
 
 const theme = createMuiTheme({
     palette: {
@@ -46,52 +44,15 @@ const theme = createMuiTheme({
             dark: orange[700],
             contrastText: "#fff"
         }
+    },
+    typography: {
+        useNextVariants: true,
     }
 });
 
-/* eslint-disable no-undef */
-
-function to_params(dict) {
-    return Object.entries(dict).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
-}
-
-function getAuthToken() {
-    return new Promise(resolver =>
-        chrome.identity.getAuthToken(
-            {interactive: true}, token => resolver(token)));
-}
-
-function getCalendars(token) {
-    return fetch(gapi_base + '/users/me/calendarList?' + to_params({access_token: token}),
-            { method: 'GET', async: true })
-        .then(response => response.json())
-        .then(data => data.items);
-}
-
-function genEventsGetter(calId, timeMin, timeMax) {
-    return token => fetch(gapi_base + '/calendars/' + calId + '/events?' + to_params({
-        access_token: token,
-        timeMin,
-        timeMax
-    }), { method: 'GET', async: true })
-        .then(response => {
-            if (response.status == 200)
-                return response.json()
-            else throw `got response ${response.status}`;
-        })
-        .catch(e => { console.log(e); return []; })
-        .then(data => data.items);
-}
-
-function getColors(token) {
-    return fetch(gapi_base + '/colors?' + to_params({access_token: token}), { method: 'GET', async: true })
-        .then(response => response.json());
-}
-
 function filterPatterns(patterns, calName) {
     return patterns.filter(p => {
-        let re = new RegExp(p.cal.regex ? p.cal.value : `^${p.cal.value}$`);
-        return re.test(calName);
+        return p.cal.regex.test(calName);
     });
 }
 
@@ -129,9 +90,6 @@ const styles = theme => ({
     patternTable: {
         minWidth: 600
     },
-    pieChart: {
-        margin: '0 auto',
-    },
     fab: {
         margin: theme.spacing.unit,
     },
@@ -143,143 +101,6 @@ const styles = theme => ({
     }
 });
 
-function customizedLabel(props) {
-    const {cx, cy, x, y, stroke, fill, name, value} = props;
-    let anchor = "middle";
-    const EPS = 2;
-    let dx = 0;
-    let dy = 0;
-    if (x < cx - EPS) {
-        dx = -5;
-        anchor = "end"
-    } else if (x > cx + EPS) {
-        dx = 5;
-        anchor = "start";
-    }
-
-    if (y < cy - EPS) {
-        dy = -5;
-    } else if (y > cy + EPS) {
-        dy = 10;
-    }
-
-    return (<text x={x} y={y} dx={dx} dy={dy} fill={fill} textAnchor={anchor}>{`${name}`}</text>);
-}
-
-function ChromiclePieChart(props) {
-    return (
-    <Grid container spacing={0}>
-      <Grid item xs={12} lg={6}>
-        <div className={props.classes.patternTableWrapper}>
-        <PieChart width={400} height={250} className={props.classes.pieChart}>
-          <Pie data={props.patternGraphData}
-               cx={200}
-               cy={125}
-               outerRadius={60}
-               fill={deepOrange[300]}
-               label={customizedLabel}/>
-          <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
-        </PieChart>
-        </div>
-      </Grid>
-      <Grid item xs={12} lg={6}>
-        <div className={props.classes.patternTableWrapper}>
-        <PieChart width={400} height={250} className={props.classes.pieChart}>
-          <Pie data={props.calendarGraphData}
-               cx={200}
-               cy={125}
-               innerRadius={40}
-               outerRadius={70}
-               fill={cyan[300]}
-               label={customizedLabel}>
-            {props.calendarGraphData.map(d => <Cell fill={d.color}/>)}
-          </Pie>
-          <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
-        </PieChart>
-        </div>
-      </Grid>
-    </Grid>);
-}
-
-ChromiclePieChart.propTypes = {
-    patternGraphData: PropTypes.object.isRequired,
-    patterncalendarData: PropTypes.object.isRequired,
-};
-
-class RegexField extends React.Component {
-    render() {
-        var pitems = this.props.items;
-        let items = [];
-        pitems['0'] = {regex: true, label: null, id: '0'};
-        for (let id in pitems)
-        {
-            items.push(
-                <MenuItem key={id} value={id}>
-                    {pitems[id].label != null ? pitems[id].label :
-                        <span style={{color: theme.palette.primary.dark}}>Custom</span>}
-                </MenuItem>);
-        }
-        return (
-            <FormControl>
-            <span>
-            <Select
-                value={this.props.value.id}
-                onChange={event => {
-                    let value;
-                    if (pitems[event.target.value].label == null) {
-                        if (this.props.value.regex)
-                            value = {regex: true, value: this.props.value.value, label: null, id: '0'};
-                        else
-                            value = {regex: true, value: `^${this.props.value.value}$`, label: null, id: '0'};
-                    } else {
-                        value = pitems[event.target.value];
-                    }
-                    this.props.onChange({target: {value}});
-                }}
-                className={this.props.value.regex ?
-                        this.props.fieldStyles.regex :
-                        this.props.fieldStyles.noRegex}>{items}</Select>
-            {this.props.value.label == null && (
-                <TextField
-                 value={this.props.value.value}
-                 onChange={event =>
-                    this.props.onChange({target: { value: {regex: true, value: event.target.value, label: null, id: '0'}}})} />
-            )}
-            </span>
-            </FormControl>
-        );
-    }
-}
-
-function CalendarField(props) {
-    let items = {};
-    for (let id in props.cached.calendars) {
-        items[id] = {
-            regex: false,
-            value: props.cached.calendars[id].name,
-            label: props.cached.calendars[id].name, id}
-    }
-    return (
-        <RegexField
-            value={props.value}
-            items={items}
-            fieldStyles={props.fieldStyles}
-            onChange={props.onChange} />);
-}
-
-function EventField(props) {
-    let items = {'any': {
-        regex: true,
-        value: '.*',
-        label: 'Any', id: 'any'}};
-    return (
-        <RegexField
-            value={props.value}
-            items={items}
-            fieldStyles={props.fieldStyles}
-            onChange={props.onChange} />);
-}
-
 class Dashboard extends React.Component {
     state = {
         open: true,
@@ -287,7 +108,7 @@ class Dashboard extends React.Component {
         page: 0,
         rowsPerPage: 5,
         timeRange: null,
-        token: getAuthToken(),
+        token: gapi.getAuthToken(),
         patternGraphData: default_chart_data,
         calendarGraphData: default_chart_data,
         activePattern: null
@@ -299,8 +120,8 @@ class Dashboard extends React.Component {
 
     static patternHead = [
         {label: "Name", field: "name", elem: TextField},
-        {label: "Calendar", field: "cal", elem: CalendarField},
-        {label: "Event", field: 'event', elem: EventField}];
+        {label: "Calendar", field: "cal", elem: withTheme(theme)(CalendarField)},
+        {label: "Event", field: 'event', elem: withTheme(theme)(EventField)}];
 
     handleChangePage = (event, page) => {
         this.setState({ page });
@@ -325,10 +146,7 @@ class Dashboard extends React.Component {
     };
 
     newPattern = () => {
-        let patterns = [{name: '',
-            cal: { regex: true, label: null, id: '0' },
-            event: { regex: true, value: '.*', label: 'Any', id: 'any' },
-            idx: 0 }, ...this.state.patterns];
+        let patterns = [PatternEntry.defaultPatternEntry(), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
     	this.setState({ patterns });
@@ -345,7 +163,7 @@ class Dashboard extends React.Component {
         for (let id in this.cached.calendars) {
             event_pms.push(
                 this.state.token
-                .then(genEventsGetter(id, start, end))
+                .then(gapi.genEventsGetter(id, start, end))
                 .then(items => this.cached.calendars[id].events = items));
         }
 
@@ -355,13 +173,12 @@ class Dashboard extends React.Component {
             for (let i = 0; i < this.state.patterns.length; i++)
                 results[i] = 0;
             for (let id in this.cached.calendars) {
-                let patterns = filterPatterns(this.state.patterns, this.cached.calendars[id].name)
-                    .map(p => { return { regex: new RegExp(p.event.value), idx: p.idx } });
+                let patterns = filterPatterns(this.state.patterns, this.cached.calendars[id].name);
                 if (!this.cached.calendars[id].events) continue;
                 this.cached.calendars[id].events.forEach(event => {
                     if (event.status !== "confirmed") return;
                     patterns.forEach(p => {
-                        if (!p.regex.test(event.summary)) return;
+                        if (!p.event.regex.test(event.summary)) return;
                         if (cal_results[id] === undefined) {
                             cal_results[id] = 0;
                         }
@@ -388,10 +205,10 @@ class Dashboard extends React.Component {
 
     loadPatterns = () => {
         let token = this.state.token;
-        let colors = token.then(getColors).then(color => {
+        let colors = token.then(gapi.getColors).then(color => {
             return color.calendar;
         });
-        let cals = token.then(getCalendars);
+        let cals = token.then(gapi.getCalendars);
         Promise.all([colors, cals]).then(([colors, items]) => {
             items.forEach(item => {
                 this.cached.calendars[item.id] = {
@@ -401,10 +218,9 @@ class Dashboard extends React.Component {
                 };
             });
             this.setState({ patterns: items.map((item, idx) => {
-                return { name: item.summary,
-                         cal: { regex: false, value: item.summary, label: item.summary, id: item.id },
-                         event: { regex: true, value: '.*', label: 'Any', id: 'any' },
-                         idx }
+                return new PatternEntry(item.summary, idx,
+                         new Pattern(item.id, false, item.summary, item.summary),
+                         Pattern.anyPattern());
             })});
         });
     };
@@ -442,7 +258,7 @@ class Dashboard extends React.Component {
                     <div className={classes.patternTableWrapper}>
                     <Table className={classes.patternTable}>
                       <TableHead>
-                        <TableRow>{Dashboard.patternHead.map(s => (<TableCell>{s.label}</TableCell>))}</TableRow>
+                        <TableRow>{Dashboard.patternHead.map((s, i) => (<TableCell key={i}>{s.label}</TableCell>))}</TableRow>
                       </TableHead>
                       <TableBody>
                         {patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(p => (
@@ -524,10 +340,9 @@ class Dashboard extends React.Component {
                 <Typography variant="h6" component="h1" gutterBottom>
                   Graph
                 </Typography>
-                  <ChromiclePieChart
+                  <PieChart
                    patternGraphData={this.state.patternGraphData}
-                   calendarGraphData={this.state.calendarGraphData}
-                   classes={classes}/>
+                   calendarGraphData={this.state.calendarGraphData}/>
               </Grid>
             </Grid>
           </main>
