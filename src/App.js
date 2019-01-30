@@ -74,7 +74,12 @@ function genEventsGetter(calId, timeMin, timeMax) {
         timeMin,
         timeMax
     }), { method: 'GET', async: true })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status == 200)
+                return response.json()
+            else throw `got response ${response.status}`;
+        })
+        .catch(e => { console.log(e); return []; })
         .then(data => data.items);
 }
 
