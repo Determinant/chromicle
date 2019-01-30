@@ -4,51 +4,29 @@ import 'typeface-roboto';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 import { DateRangePicker } from 'react-dates';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import orange from '@material-ui/core/colors/orange';
+import { withStyles } from '@material-ui/core/styles';
+import { MuiThemeProvider } from '@material-ui/core/styles';
 import cyan from '@material-ui/core/colors/cyan';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import Grid from '@material-ui/core/Grid';
-import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 import Logo from './Logo';
 import * as gapi from './gapi';
 import { Pattern, PatternEntry } from './pattern';
 import PieChart from './Chart';
-import { CalendarField, EventField } from './RegexField';
+import PatternTable from './PatternTable';
+import theme from './theme';
 
-const default_chart_data = [{name: 'Work', value: 10, color: cyan[300]},
-                            {name: 'Wasted', value: 10, color: cyan[300]}];
-
-const theme = createMuiTheme({
-    palette: {
-        primary: {
-            light: orange[300],
-            main: orange[500],
-            dark: orange[700],
-            contrastText: "#fff"
-        }
-    },
-    typography: {
-        useNextVariants: true,
-    }
-});
+const default_chart_data = [
+    {name: 'Work', value: 10, color: cyan[300]},
+    {name: 'Wasted', value: 10, color: cyan[300]}];
 
 function filterPatterns(patterns, calName) {
     return patterns.filter(p => {
@@ -83,30 +61,14 @@ const styles = theme => ({
     buttonSpacer: {
         marginBottom: theme.spacing.unit * 4,
     },
-    patternTableWrapper: {
-        overflowX: 'auto',
-        overflowY: 'hidden'
-    },
-    patternTable: {
-        minWidth: 600
-    },
     fab: {
         margin: theme.spacing.unit,
     },
-    fieldNoRegex: {
-        width: 200
-    },
-    fieldRegex: {
-        marginRight: '0.5em'
-    }
 });
 
 class Dashboard extends React.Component {
     state = {
-        open: true,
         patterns: [],
-        page: 0,
-        rowsPerPage: 5,
         timeRange: null,
         token: gapi.getAuthToken(),
         patternGraphData: default_chart_data,
@@ -117,11 +79,6 @@ class Dashboard extends React.Component {
     cached = {
         calendars: {}
     };
-
-    static patternHead = [
-        {label: "Name", field: "name", elem: TextField},
-        {label: "Calendar", field: "cal", elem: withTheme(theme)(CalendarField)},
-        {label: "Event", field: 'event', elem: withTheme(theme)(EventField)}];
 
     handleChangePage = (event, page) => {
         this.setState({ page });
@@ -149,7 +106,7 @@ class Dashboard extends React.Component {
         let patterns = [PatternEntry.defaultPatternEntry(), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
-    	this.setState({ patterns });
+        this.setState({ patterns });
     };
 
     analyze = () => {
@@ -219,140 +176,92 @@ class Dashboard extends React.Component {
             });
             this.setState({ patterns: items.map((item, idx) => {
                 return new PatternEntry(item.summary, idx,
-                         new Pattern(item.id, false, item.summary, item.summary),
-                         Pattern.anyPattern());
+                    new Pattern(item.id, false, item.summary, item.summary),
+                    Pattern.anyPattern());
             })});
         });
     };
 
     render() {
-      const { classes } = this.props;
-      const { patterns, rows, rowsPerPage, page } = this.state;
-      const nDummy = rowsPerPage - Math.min(rowsPerPage, patterns.length - page * rowsPerPage);
+        const { classes } = this.props;
 
-      return (
-      <MuiThemeProvider theme={theme}>
-        <div className={classes.root}>
-          <AppBar
-           position="absolute"
-           className={classes.appBar}>
-            <Toolbar disableGutters={!this.state.open} className={classes.toolbar}>
-              <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                <Logo style={{width: '2em', verticalAlign: 'bottom', marginRight: '0.2em'}}/>Chromicle
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <main className={classes.content}>
-            <div className={classes.appBarSpacer} />
-              <Grid container  spacing={16}>
-              <CssBaseline />
-              <Grid item md={6} xs={12}>
-                <FormControl fullWidth={true}>
-                  <FormGroup>
-                    <Typography variant="h6" component="h1" gutterBottom>
-                      Event Patterns
-                      <IconButton
-                       style={{marginBottom: '0.12em', marginLeft: '0.5em'}}
-                       onClick={() => this.newPattern()}><AddCircleIcon /></IconButton>
-                    </Typography>
-                    <div className={classes.patternTableWrapper}>
-                    <Table className={classes.patternTable}>
-                      <TableHead>
-                        <TableRow>{Dashboard.patternHead.map((s, i) => (<TableCell key={i}>{s.label}</TableCell>))}</TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(p => (
-                            <TableRow
-                             onMouseOver={() => this.setState({ activePattern: p.idx })}
-                             onMouseOut={() => this.setState({ activePattern: null })}>
-                                {Dashboard.patternHead.map(s => {
-                                    const CustomText = s.elem;
-                                    return (
-                                <TableCell>
-                                  <CustomText
-                                   value={p[s.field]}
-                                   cached={this.cached}
-                                   fieldStyles={{noRegex: classes.fieldNoRegex, regex: classes.fieldRegex}}
-                                   onChange={event => this.updatePattern(s.field, p.idx, event.target.value)}/>
-                                  </TableCell>)})}
-                                  <span style={(this.state.activePattern === p.idx &&
-                                                  { position: 'absolute', right: 0, height: 48 }) ||
-                                                  { display: 'none' }}>
-                                    <DeleteOutlinedIcon
-                                     style={{ height: '100%', cursor: 'pointer' }}
-                                     onClick={() => this.removePattern(p.idx)} />
-                                  </span>
-                            </TableRow>))}
-                        {nDummy > 0 && (
-                            <TableRow style={{ height: 48 * nDummy }}>
-                              <TableCell colSpan={Dashboard.patternHead.length} />
-                            </TableRow>)}
-                      </TableBody>
-                    </Table>
-                    </div>
-                    <TablePagination
-                       rowsPerPageOptions={[5, 10, 25]}
-                       component="div"
-                       count={patterns.length}
-                       rowsPerPage={rowsPerPage}
-                       page={page}
-                       backIconButtonProps={{'aria-label': 'Previous Page'}}
-                       nextIconButtonProps={{'aria-label': 'Next Page'}}
-                       onChangePage={this.handleChangePage}
-                       onChangeRowsPerPage={this.handleChangeRowsPerPage}/>
-                  </FormGroup>
-                  <FormGroup>
-            	    <Typography variant="h6" component="h1" gutterBottom>
-            	      Time Range
-            	    </Typography>
-                    <div style={{textAlign: 'center'}}>
-                      <DateRangePicker
-    			       startDate={this.state.startDate} // momentPropTypes.momentObj or null,
-    			       startDateId="your_unique_start_date_id" // PropTypes.string.isRequired,
-    			       endDate={this.state.endDate} // momentPropTypes.momentObj or null,
-    			       endDateId="your_unique_end_date_id" // PropTypes.string.isRequired,
-    			       onDatesChange={({ startDate, endDate }) => {
-                         //if (startDate && endDate)
-                         //    this.setState({ timeRange: [startDate.toISOString(), endDate.toISOString()]});
-                         this.setState({ startDate, endDate });
-                       }} // PropTypes.func.isRequired,
-    			       focusedInput={this.state.focusedInput} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
-    			       onFocusChange={focusedInput => this.setState({ focusedInput })} // PropTypes.func.isRequired,
-                       isOutsideRange={() => false}/>
-                    </div>
-                  </FormGroup>
-                  <div className={classes.buttonSpacer} />
-                  <Grid container spacing={16}>
-                    <Grid item md={6} xs={12}>
-                      <FormGroup>
-                        <Button variant="contained" color="primary" onClick={this.loadPatterns}>Load</Button>
-                        </FormGroup>
-                    </Grid>
-                    <Grid item md={6} xs={12}>
-                      <FormGroup>
-                        <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
-                      </FormGroup>
-                    </Grid>
-                  </Grid>
-                </FormControl>
-              </Grid>
-              <Grid item md={6} xs={12}>
-                <Typography variant="h6" component="h1" gutterBottom>
-                  Graph
-                </Typography>
-                  <PieChart
-                   patternGraphData={this.state.patternGraphData}
-                   calendarGraphData={this.state.calendarGraphData}/>
-              </Grid>
-            </Grid>
-          </main>
-        </div>
-      </MuiThemeProvider>);
+        return (
+            <MuiThemeProvider theme={theme}>
+                <div className={classes.root}>
+                    <AppBar
+                        position="absolute"
+                        className={classes.appBar}>
+                        <Toolbar className={classes.toolbar}>
+                            <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+                                <Logo style={{width: '2em', verticalAlign: 'bottom', marginRight: '0.2em'}}/>Chromicle
+                            </Typography>
+                        </Toolbar>
+                    </AppBar>
+                    <main className={classes.content}>
+                        <div className={classes.appBarSpacer} />
+                        <Grid container  spacing={16}>
+                            <CssBaseline />
+                            <Grid item md={6} xs={12}>
+                                <FormControl fullWidth={true}>
+                                    <FormGroup>
+                                        <Typography variant="h6" component="h1" gutterBottom>
+                                            Event Patterns
+                                            <IconButton
+                                                style={{marginBottom: '0.12em', marginLeft: '0.5em'}}
+                                                onClick={() => this.newPattern()}><AddCircleIcon /></IconButton>
+                                        </Typography>
+                                        <PatternTable patterns={this.state.patterns} cached={this.cached} />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Typography variant="h6" component="h1" gutterBottom>
+                                            Time Range
+                                        </Typography>
+                                        <div style={{textAlign: 'center'}}>
+                                            <DateRangePicker
+                                                startDate={this.state.startDate}
+                                                startDateId="start_date_id"
+                                                endDate={this.state.endDate}
+                                                endDateId="end_date_id"
+                                                onDatesChange={({ startDate, endDate }) => {
+                                                    this.setState({ startDate, endDate });
+                                                }} 
+                                                focusedInput={this.state.focusedInput}
+                                                onFocusChange={focusedInput => this.setState({ focusedInput })}
+                                                isOutsideRange={() => false}/>
+                                        </div>
+                                    </FormGroup>
+                                    <div className={classes.buttonSpacer} />
+                                    <Grid container spacing={16}>
+                                        <Grid item md={6} xs={12}>
+                                            <FormGroup>
+                                                <Button variant="contained" color="primary" onClick={this.loadPatterns}>Load</Button>
+                                            </FormGroup>
+                                        </Grid>
+                                        <Grid item md={6} xs={12}>
+                                            <FormGroup>
+                                                <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
+                                            </FormGroup>
+                                        </Grid>
+                                    </Grid>
+                                </FormControl>
+                            </Grid>
+                            <Grid item md={6} xs={12}>
+                                <Typography variant="h6" component="h1" gutterBottom>
+                                    Graph
+                                </Typography>
+                                <PieChart
+                                    patternGraphData={this.state.patternGraphData}
+                                    calendarGraphData={this.state.calendarGraphData}/>
+                            </Grid>
+                        </Grid>
+                    </main>
+                </div>
+            </MuiThemeProvider>);
     }
 }
 
 Dashboard.propTypes = {
-  classes: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(Dashboard);
