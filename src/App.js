@@ -106,8 +106,8 @@ class Dashboard extends React.Component {
             alert("Please choose a valid time range.");
             return;
         }
-        let start = this.state.startDate.toDate();
-        let end = this.state.endDate.toDate();
+        let start = this.state.startDate.startOf('day').toDate();
+        let end = this.state.endDate.startOf('day').toDate();
         console.log(start, end);
         let event_pms = [];
         for (let id in this.cached.calendars)
