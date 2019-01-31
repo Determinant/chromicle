@@ -1,6 +1,11 @@
 /* global chrome */
 const gapi_base = 'https://www.googleapis.com/calendar/v3';
 
+const GApiError = {
+    invalidSyncToken: 1,
+    otherError: 2,
+};
+
 function to_params(dict) {
     return Object.entries(dict).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
 }
@@ -30,7 +35,7 @@ function getEvent(calId, eventId, token) {
         .then(response => response.json());
 }
 
-function getEvents(calId, token, syncToken, resultsPerRequest = '') {
+function getEvents(calId, token, syncToken, resultsPerRequest=100) {
     let results = [];
     const singleFetch = (pageToken, syncToken) => fetch(`${gapi_base}/calendars/${calId}/events?${to_params({
             access_token: token,
@@ -41,15 +46,11 @@ function getEvents(calId, token, syncToken, resultsPerRequest = '') {
             .then(response => {
                 if (response.status === 200)
                     return response.json();
-                else throw {};
+                else if (response.status == 410)
+                    throw GApiError.invalidSyncToken;
+                else throw GApiError.otherErrors;
             })
-            .catch(e => e)
             .then(data => {
-                if (!data.items)
-                    return ({
-                        nextSyncToken: '',
-                        results: []
-                    });
                 results.push(...data.items);
                 if (data.nextPageToken) {
                     return singleFetch(data.nextPageToken, '');
@@ -165,7 +166,12 @@ export class GCalendar {
                 else if (e.status === 'cancelled')
                     this.removeEvent(e);
             }));
-        }));
+        })).catch(e => {
+            if (e == GApiError.invalidSyncToken) {
+                this.syncToken = '';
+                this.sync();
+            } else throw e;
+        });
     }
 
     getEvents(start, end) {

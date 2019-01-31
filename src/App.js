@@ -111,8 +111,12 @@ class Dashboard extends React.Component {
         console.log(start, end);
         let event_pms = [];
         for (let id in this.cached.calendars)
-            event_pms.push(this.cached.calendars[id].cal.getEvents(start, end).then(
-                r => { return { id, events: r } }));
+            event_pms.push(this.cached.calendars[id].cal.getEvents(start, end)
+                .then(r => { return { id, events: r }; })
+                .catch(e => {
+                    console.log(`cannot load calendar ${id}`);
+                    return { id, events: [] };
+                }));
 
         Promise.all(event_pms).then(all_events => {
             let events = {};
