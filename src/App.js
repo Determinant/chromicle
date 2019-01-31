@@ -80,14 +80,6 @@ class Dashboard extends React.Component {
         calendars: {}
     };
 
-    handleChangePage = (event, page) => {
-        this.setState({ page });
-    };
-
-    handleChangeRowsPerPage = event => {
-        this.setState({ rowsPerPage: event.target.value });
-    };
-
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
@@ -114,32 +106,31 @@ class Dashboard extends React.Component {
             alert("Please choose a valid time range.");
             return;
         }
-        let start = this.state.startDate.toISOString();
-        let end = this.state.endDate.toISOString();
+        let start = this.state.startDate.toDate();
+        let end = this.state.endDate.toDate();
+        console.log(start, end);
         let event_pms = [];
-        for (let id in this.cached.calendars) {
-            event_pms.push(
-                this.state.token
-                .then(gapi.genEventsGetter(id, start, end))
-                .then(items => this.cached.calendars[id].events = items));
-        }
+        for (let id in this.cached.calendars)
+            event_pms.push(this.cached.calendars[id].cal.getEvents(start, end).then(
+                r => { return { id, events: r } }));
 
-        Promise.all(event_pms).then(() => {
+        Promise.all(event_pms).then(all_events => {
+            let events = {};
             let results = {}; // pattern idx => time
             let cal_results = {}; // cal id => time
+            all_events.forEach(e => events[e.id] = e.events);
             for (let i = 0; i < this.state.patterns.length; i++)
                 results[i] = 0;
             for (let id in this.cached.calendars) {
+                if (!events[id]) continue;
                 let patterns = filterPatterns(this.state.patterns, this.cached.calendars[id].name);
-                if (!this.cached.calendars[id].events) continue;
-                this.cached.calendars[id].events.forEach(event => {
-                    if (event.status !== "confirmed") return;
+                events[id].forEach(event => {
                     patterns.forEach(p => {
                         if (!p.event.regex.test(event.summary)) return;
-                        if (cal_results[id] === undefined) {
+                        if (!cal_results.hasOwnProperty(id)) {
                             cal_results[id] = 0;
                         }
-                        let duration = (new Date(event.end.dateTime) - new Date(event.start.dateTime)) / 60000;
+                        let duration = (event.end - event.start) / 60000;
                         results[p.idx] += duration;
                         cal_results[id] += duration;
                     });
@@ -156,6 +147,7 @@ class Dashboard extends React.Component {
                     value: (cal_results[id] / 60.0),
                     color: this.cached.calendars[id].color.background});
             }
+            //console.log(patternGraphData, calendarGraphData);
             this.setState({ patternGraphData, calendarGraphData });
         });
     };
@@ -170,8 +162,8 @@ class Dashboard extends React.Component {
             items.forEach(item => {
                 this.cached.calendars[item.id] = {
                     name: item.summary,
-                    events: {},
-                    color: colors[item.colorId]
+                    color: colors[item.colorId],
+                    cal: new gapi.GCalendar(item.id, item.summary)
                 };
             });
             this.setState({ patterns: items.map((item, idx) => {
@@ -210,7 +202,11 @@ class Dashboard extends React.Component {
                                                 style={{marginBottom: '0.12em', marginLeft: '0.5em'}}
                                                 onClick={() => this.newPattern()}><AddCircleIcon /></IconButton>
                                         </Typography>
-                                        <PatternTable patterns={this.state.patterns} cached={this.cached} />
+                                        <PatternTable
+                                            patterns={this.state.patterns}
+                                            cached={this.cached}
+                                            onRemovePattern={this.removePattern}
+                                            onUpdatePattern={this.updatePattern} />
                                     </FormGroup>
                                     <FormGroup>
                                         <Typography variant="h6" component="h1" gutterBottom>

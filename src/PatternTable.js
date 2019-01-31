@@ -45,11 +45,11 @@ class PatternTable extends React.Component {
         rowsPerPage: 5,
     };
 
-    handleChangePage(event, page) {
+    handleChangePage = (event, page) => {
         this.setState({ page });
     }
 
-    handleChangeRowsPerPage(event) {
+    handleChangeRowsPerPage = event => {
         this.setState({ rowsPerPage: event.target.value });
     }
 
@@ -69,13 +69,13 @@ class PatternTable extends React.Component {
                                 <CustomText
                                     value={p[s.field]}
                                     cached={cached}
-                                    onChange={event => this.updatePattern(s.field, p.idx, event.target.value)}/>
+                                    onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}/>
                             </TableCell>)})
                 }
                 <span className={this.state.activePattern === p.idx ? classes.deleteButtonShow : classes.deleteButtonHide}>
                     <DeleteOutlinedIcon
                         className={classes.deleteIcon}
-                        onClick={() => this.removePattern(p.idx)} />
+                        onClick={() => this.props.onRemovePattern(p.idx)} />
                 </span>
             </TableRow>));
 
@@ -116,6 +116,8 @@ PatternTable.propTypes = {
     classes: PropTypes.object.isRequired,
     patterns: PropTypes.array.isRequired,
     cached: PropTypes.object.isRequired,
+    onRemovePattern: PropTypes.func.isRequired,
+    onUpdatePattern: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(PatternTable);
