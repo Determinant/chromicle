@@ -16,7 +16,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build:ui": "react-scripts build",
+    "build:bg": "node scripts/build",
+    "build": "npm run build:ui && npm run build:bg",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -28,5 +30,10 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "@babel/preset-env": "^7.3.1",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3"
+  }
 }

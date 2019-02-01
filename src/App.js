@@ -1,3 +1,4 @@
+/* global chrome */
 import React from 'react';
 import PropTypes from 'prop-types';
 import 'typeface-roboto';
@@ -69,6 +70,7 @@ const styles = theme => ({
 class Dashboard extends React.Component {
     state = {
         patterns: [],
+        calendars: [],
         timeRange: null,
         token: gapi.getAuthToken(),
         patternGraphData: default_chart_data,
@@ -76,14 +78,33 @@ class Dashboard extends React.Component {
         activePattern: null
     };
 
-    cached = {
-        calendars: {}
-    };
+    constructor(props) {
+        super(props);
+        let port = chrome.runtime.connect({name: 'main'});
+        const getCallBack = t => this.requestCallback[t];
+        port.onMessage.addListener(function(msg) {
+            console.log(msg);
+            let t = getCallBack(msg.type);
+            let e = t.inFlight[msg.id];
+            console.assert(e !== undefined);
+            t.ids.push(msg.id);
+            e(msg);
+        });
+        this.port = port;
+        this.requestCallback = {};
+        this.sendMsg({ type: 1 }).then(msg => {
+            this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
+        });
+        this.sendMsg({ type: 3 }).then(msg => {
+            this.setState({ calendars: msg.data });
+        });
+    }
 
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
         this.setState({ patterns });
+        this.sendMsg({ type: 0, data: patterns });
     };
 
     removePattern = idx => {
@@ -92,14 +113,56 @@ class Dashboard extends React.Component {
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
         this.setState({ patterns });
+        this.sendMsg({ type: 0, data: patterns });
     };
 
     newPattern = () => {
-        let patterns = [PatternEntry.defaultPatternEntry(), ...this.state.patterns];
+        let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
         this.setState({ patterns });
+        this.sendMsg({ type: 0, data: patterns });
     };
+
+    loadPatterns = patterns => {
+        this.setState({ patterns });
+        this.sendMsg({ type: 0, data: patterns });
+    };
+
+    loadCalendars = calendars => {
+        this.setState({ calendars });
+        this.sendMsg({ type: 5, data: calendars });
+    };
+
+    sendMsg = msg => {
+        if (!this.requestCallback.hasOwnProperty(msg.type))
+            this.requestCallback[msg.type] = {inFlight: {}, ids: [], maxId: 0};
+        let t = this.requestCallback[msg.type];
+        let cb;
+        let pm = new Promise(resolve => { cb = resolve; });
+        let id;
+        if (t.ids.length > 0) {
+            id = t.ids.pop();
+        } else {
+            id = t.maxId++;
+        }
+        t.inFlight[id] = cb;
+        msg.id = id;
+        this.port.postMessage(msg);
+        return pm;
+    }
+
+    getCalEvents = (id, start, end) => {
+        return this.sendMsg({ type: 4, data: { id,
+                    start: start.getTime(),
+                    end: end.getTime() } })
+            .then(({ data }) => data.map(e => {
+                return {
+                    id: e.id,
+                    start: new Date(e.start),
+                    end: new Date(e.end) }
+            }));
+    }
 
     analyze = () => {
         if (!(this.state.startDate && this.state.endDate)) {
@@ -108,26 +171,23 @@ class Dashboard extends React.Component {
         }
         let start = this.state.startDate.startOf('day').toDate();
         let end = this.state.endDate.startOf('day').toDate();
-        console.log(start, end);
         let event_pms = [];
-        for (let id in this.cached.calendars)
-            event_pms.push(this.cached.calendars[id].cal.getEvents(start, end)
-                .then(r => { return { id, events: r }; })
-                .catch(e => {
-                    console.log(`cannot load calendar ${id}`);
-                    return { id, events: [] };
-                }));
-
+        let cals = this.state.calendars;
+        for (let id in cals)
+            event_pms.push(this.getCalEvents(id, start, end)
+                .then(r => { return { id, events: r }; }));
+        console.log(cals);
         Promise.all(event_pms).then(all_events => {
+            console.log(all_events);
             let events = {};
             let results = {}; // pattern idx => time
             let cal_results = {}; // cal id => time
             all_events.forEach(e => events[e.id] = e.events);
             for (let i = 0; i < this.state.patterns.length; i++)
                 results[i] = 0;
-            for (let id in this.cached.calendars) {
+            for (let id in cals) {
                 if (!events[id]) continue;
-                let patterns = filterPatterns(this.state.patterns, this.cached.calendars[id].name);
+                let patterns = filterPatterns(this.state.patterns, cals[id].name);
                 events[id].forEach(event => {
                     patterns.forEach(p => {
                         if (!p.event.regex.test(event.summary)) return;
@@ -147,34 +207,35 @@ class Dashboard extends React.Component {
             }
             for (let id in cal_results) {
                 calendarGraphData.push({
-                    name: this.cached.calendars[id].name,
+                    name: cals[id].name,
                     value: (cal_results[id] / 60.0),
-                    color: this.cached.calendars[id].color.background});
+                    color: cals[id].color.background});
             }
-            //console.log(patternGraphData, calendarGraphData);
+            console.log(patternGraphData, calendarGraphData);
             this.setState({ patternGraphData, calendarGraphData });
         });
     };
 
-    loadPatterns = () => {
+    load = () => {
         let token = this.state.token;
         let colors = token.then(gapi.getColors).then(color => {
             return color.calendar;
         });
         let cals = token.then(gapi.getCalendars);
         Promise.all([colors, cals]).then(([colors, items]) => {
+            var cals = {};
             items.forEach(item => {
-                this.cached.calendars[item.id] = {
+                cals[item.id] = {
                     name: item.summary,
                     color: colors[item.colorId],
-                    cal: new gapi.GCalendar(item.id, item.summary)
-                };
-            });
-            this.setState({ patterns: items.map((item, idx) => {
+                    //cal: new gapi.GCalendar(item.id, item.summary)
+                }});
+            this.loadCalendars(cals);
+            this.loadPatterns(items.map((item, idx) => {
                 return new PatternEntry(item.summary, idx,
                     new Pattern(item.id, false, item.summary, item.summary),
                     Pattern.anyPattern());
-            })});
+            }));
         });
     };
 
@@ -208,7 +269,7 @@ class Dashboard extends React.Component {
                                         </Typography>
                                         <PatternTable
                                             patterns={this.state.patterns}
-                                            cached={this.cached}
+                                            calendars={this.state.calendars}
                                             onRemovePattern={this.removePattern}
                                             onUpdatePattern={this.updatePattern} />
                                     </FormGroup>
@@ -234,7 +295,7 @@ class Dashboard extends React.Component {
                                     <Grid container spacing={16}>
                                         <Grid item md={6} xs={12}>
                                             <FormGroup>
-                                                <Button variant="contained" color="primary" onClick={this.loadPatterns}>Load</Button>
+                                                <Button variant="contained" color="primary" onClick={this.load}>Load</Button>
                                             </FormGroup>
                                         </Grid>
                                         <Grid item md={6} xs={12}>

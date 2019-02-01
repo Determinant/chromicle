@@ -10,6 +10,7 @@ export class Pattern {
     get isEmpty() { return this.label === null; }
     static emptyPattern = () => new Pattern(0, true, '', null);
     static anyPattern = () => new Pattern('any', true, '.*', 'Any');
+    static revive = obj => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
 }
 
 export class PatternEntry {
@@ -21,4 +22,7 @@ export class PatternEntry {
     }
 
     static defaultPatternEntry = (idx) => new PatternEntry('', idx, Pattern.emptyPattern(), Pattern.anyPattern());
+    static revive = obj => new PatternEntry(
+        obj.name, obj.idx,
+        Pattern.revive(obj.cal), Pattern.revive(obj.event));
 }

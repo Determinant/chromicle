@@ -72,10 +72,10 @@ const RegexFieldWithStyles = withStyles(styles)(RegexField);
 
 export function CalendarField(props) {
     let options = {};
-    for (let id in props.cached.calendars) {
+    for (let id in props.calendars) {
         options[id] = new Pattern(id, false,
-            props.cached.calendars[id].name,
-            props.cached.calendars[id].name);
+            props.calendars[id].name,
+            props.calendars[id].name);
     }
     return (
         <RegexFieldWithStyles

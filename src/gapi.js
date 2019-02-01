@@ -46,7 +46,7 @@ function getEvents(calId, token, syncToken, resultsPerRequest=100) {
             .then(response => {
                 if (response.status === 200)
                     return response.json();
-                else if (response.status == 410)
+                else if (response.status === 410)
                     throw GApiError.invalidSyncToken;
                 else throw GApiError.otherErrors;
             })
@@ -94,22 +94,26 @@ export class GCalendar {
             this.getSlot(ks)[e.id] = {
                 start: e.start,
                 end: e.end,
-                id: e.id };
+                id: e.id,
+                summary: e.summary};
         else
         {
             this.getSlot(ks)[e.id] = {
                 start: e.start,
                 end: GCalendar.slotEndDate(ks),
-                id: e.id };
+                id: e.id,
+                summary: e.summary};
             this.getSlot(ke)[e.id] = {
                 start: GCalendar.slotStartDate(ke),
                 end: e.end,
-                id: e.id };
+                id: e.id,
+                summary: e.summary};
             for (let k = ks + 1; k < ke; k++)
                 this.getSlot(k)[e.id] = {
                     start: GCalendar.slotStartDate(k),
                     end: GCalendar.slotEndDate(k),
-                    id: e.id };
+                    id: e.id,
+                    summary: e.summary};
         }
     }
 
@@ -126,13 +130,11 @@ export class GCalendar {
         for (let id in s) {
             if (!(s[id].start >= end || s[id].end <= start))
             {
-                let nstart = s[id].start < start ? start: s[id].start;
-                let nend = s[id].end > end ? end: s[id].end;
-                if (nstart > nend) console.log(s[id], start, end);
                 results.push({
                     id,
                     start: s[id].start < start ? start: s[id].start,
-                    end: s[id].end > end ? end: s[id].end
+                    end: s[id].end > end ? end: s[id].end,
+                    summary: s[id].summary
                 });
             }
         }
@@ -167,7 +169,7 @@ export class GCalendar {
                     this.removeEvent(e);
             }));
         })).catch(e => {
-            if (e == GApiError.invalidSyncToken) {
+            if (e === GApiError.invalidSyncToken) {
                 this.syncToken = '';
                 this.sync();
             } else throw e;

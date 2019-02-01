@@ -54,7 +54,7 @@ class PatternTable extends React.Component {
     }
 
     render() {
-        const { classes, cached, patterns } = this.props;
+        const { classes, calendars, patterns } = this.props;
         const { rowsPerPage, page } = this.state;
         const nDummy = rowsPerPage - Math.min(rowsPerPage, patterns.length - page * rowsPerPage);
         let rows = patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(p => (
@@ -68,7 +68,7 @@ class PatternTable extends React.Component {
                             <TableCell>
                                 <CustomText
                                     value={p[s.field]}
-                                    cached={cached}
+                                    calendars={calendars}
                                     onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}/>
                             </TableCell>)})
                 }
@@ -115,7 +115,7 @@ class PatternTable extends React.Component {
 PatternTable.propTypes = {
     classes: PropTypes.object.isRequired,
     patterns: PropTypes.array.isRequired,
-    cached: PropTypes.object.isRequired,
+    calendars: PropTypes.object.isRequired,
     onRemovePattern: PropTypes.func.isRequired,
     onUpdatePattern: PropTypes.func.isRequired,
 };
