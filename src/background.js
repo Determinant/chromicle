@@ -23,7 +23,7 @@ chrome.runtime.onConnect.addListener(function(port) {
         else if (msg.type == 4) {
             calData[msg.data.id].getEvents(new Date(msg.data.start), new Date(msg.data.end))
                 .catch(e => {
-                    console.log(`cannot load calendar ${msg.data.id}`);
+                    console.log(`cannot load calendar ${msg.data.id}`, e);
                     return [];
                 })
                 .then(data => {

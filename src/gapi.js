@@ -1,4 +1,5 @@
 /* global chrome */
+import LRU from "lru-cache";
 const gapi_base = 'https://www.googleapis.com/calendar/v3';
 
 const GApiError = {
@@ -7,7 +8,7 @@ const GApiError = {
 };
 
 function to_params(dict) {
-    return Object.entries(dict).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+    return Object.entries(dict).filter(([k, v]) => v).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
 }
 
 export function getAuthToken() {
@@ -35,12 +36,14 @@ function getEvent(calId, eventId, token) {
         .then(response => response.json());
 }
 
-function getEvents(calId, token, syncToken, resultsPerRequest=100) {
+function getEvents(calId, token, syncToken=null, timeMin=null, timeMax=null, resultsPerRequest=100) {
     let results = [];
     const singleFetch = (pageToken, syncToken) => fetch(`${gapi_base}/calendars/${calId}/events?${to_params({
             access_token: token,
             pageToken,
             syncToken,
+            timeMin,
+            timeMax,
             maxResults: resultsPerRequest
         })}`, { method: 'GET', async: true })
             .then(response => {
@@ -66,66 +69,106 @@ function getEvents(calId, token, syncToken, resultsPerRequest=100) {
 }
 
 export class GCalendar {
-    constructor(calId, name) {
+    constructor(calId, name, options={maxCachedItems: 100, nDaysPerSlot: 10, largeQuery: 10}) {
         this.calId = calId;
         this.name = name;
         this.token = getAuthToken();
         this.syncToken = '';
-        this.cache = {};
+        this.cache = new LRU({
+            max: options.maxCachedItems,
+            dispose: (k, v) => this.onRemoveSlot(k, v)
+        });
+        this.eventMeta = {};
+        this.options = options;
+        this.divider = 8.64e7 * this.options.nDaysPerSlot;
     }
 
-    static dateToCacheKey(date) {
-        return Math.floor(date / 8.64e7);
+    dateToCacheKey(date) {
+        return Math.floor(date / this.divider);
+    }
+
+    dateRangeToCacheKeys(range) {
+        return {
+            start: this.dateToCacheKey(range.start),
+            end: this.dateToCacheKey(new Date(range.end.getTime() - 1))
+        };
     }
 
     getSlot(k) {
-        if (!this.cache[k])
-            this.cache[k] = {};
-        return this.cache[k];
+        if (!this.cache.has(k))
+        {
+            let res = {};
+            this.cache.set(k, res);
+            return res;
+        }
+        else return this.cache.get(k);
     }
 
-    static slotStartDate(k) { return new Date(k * 8.64e7); }
-    static slotEndDate(k) { return new Date((k + 1) * 8.64e7); }
+    onRemoveSlot(k, v) {
+        for (let id in v) {
+            console.assert(this.eventMeta[id]);
+            let keys = this.eventMeta[id].keys;
+            keys.delete(k);
+            if (keys.size === 0)
+                delete this.eventMeta[id];
+        }
+    }
 
-    addEvent(e) {
-        let ks = GCalendar.dateToCacheKey(e.start);
-        let ke = GCalendar.dateToCacheKey(new Date(e.end.getTime() - 1));
+    slotStartDate(k) { return new Date(k * this.divider); }
+    slotEndDate(k) { return new Date((k + 1) * this.divider); }
+
+    addEvent(e, evict = false) {
+        //console.log('adding event', e);
+        if (this.eventMeta.hasOwnProperty(e.id))
+            this.removeEvent(e);
+        let r = this.dateRangeToCacheKeys(e);
+        let ks = r.start;
+        let ke = r.end;
+        let t = this.cache.length;
+        let keys = new Set();
+        for (let i = ks; i <= ke; i++)
+        {
+            keys.add(i);
+            if (!this.cache.has(i)) t++;
+        }
+        this.eventMeta[e.id] = {
+            keys,
+            summary: e.summary,
+        };
+        if (!evict && t > this.options.maxCachedItems) return;
         if (ks === ke)
             this.getSlot(ks)[e.id] = {
                 start: e.start,
                 end: e.end,
-                id: e.id,
-                summary: e.summary};
+                id: e.id };
         else
         {
             this.getSlot(ks)[e.id] = {
                 start: e.start,
-                end: GCalendar.slotEndDate(ks),
-                id: e.id,
-                summary: e.summary};
+                end: this.slotEndDate(ks),
+                id: e.id };
             this.getSlot(ke)[e.id] = {
-                start: GCalendar.slotStartDate(ke),
+                start: this.slotStartDate(ke),
                 end: e.end,
-                id: e.id,
-                summary: e.summary};
+                id: e.id };
             for (let k = ks + 1; k < ke; k++)
                 this.getSlot(k)[e.id] = {
-                    start: GCalendar.slotStartDate(k),
-                    end: GCalendar.slotEndDate(k),
-                    id: e.id,
-                    summary: e.summary};
+                    start: this.slotStartDate(k),
+                    end: this.slotEndDate(k),
+                    id: e.id};
         }
     }
 
     removeEvent(e) {
-        let ks = GCalendar.dateToCacheKey(e.start);
-        let ke = GCalendar.dateToCacheKey(new Date(e.end.getTime() - 1));
-        for (let k = ks; k <= ke; k++)
-            delete this.getSlot(k)[e.id];
+        let keys = this.eventMeta[e.id].keys;
+        console.assert(keys);
+        keys.forEach(k => delete this.getSlot(k)[e.id]);
+        delete this.eventMeta[e.id];
     }
 
     getSlotEvents(k, start, end) {
         let s = this.getSlot(k);
+        //console.log(s);
         let results = [];
         for (let id in s) {
             if (!(s[id].start >= end || s[id].end <= start))
@@ -134,17 +177,18 @@ export class GCalendar {
                     id,
                     start: s[id].start < start ? start: s[id].start,
                     end: s[id].end > end ? end: s[id].end,
-                    summary: s[id].summary
+                    summary: this.eventMeta[id].summary
                 });
             }
         }
         return results;
     }
 
-    getCachedEvents(start, end) {
-        let ks = GCalendar.dateToCacheKey(start);
-        let ke = GCalendar.dateToCacheKey(new Date(end.getTime() - 1));
-        let results = this.getSlotEvents(ks, start, end);
+    getCachedEvents(_r) {
+        let r = this.dateRangeToCacheKeys(_r);
+        let ks = r.start;
+        let ke = r.end;
+        let results = this.getSlotEvents(ks, _r.start, _r.end);
         for (let k = ks + 1; k < ke; k++)
         {
             let s = this.getSlot(k);
@@ -152,7 +196,7 @@ export class GCalendar {
                 results.push(s[id]);
         }
         if (ke > ks)
-            results.push(...this.getSlotEvents(ke, start, end));
+            results.push(...this.getSlotEvents(ke, _r.start, _r.end));
         return results;
     }
 
@@ -177,6 +221,63 @@ export class GCalendar {
     }
 
     getEvents(start, end) {
-        return this.sync().then(() => this.getCachedEvents(start, end));
+        let r = this.dateRangeToCacheKeys({ start, end });
+        let query = {};
+        for (let k = r.start; k <= r.end; k++)
+            if (!this.cache.has(k))
+            {
+                if (!query.hasOwnProperty('start'))
+                    query.start = k;
+                query.end = k;
+            }
+        console.log(`start: ${start} end: ${end}`);
+        if (query.hasOwnProperty('start'))
+        {
+            console.assert(query.start <= query.end);
+            if (query.end - query.start + 1 > this.options.largeQuery) {
+                console.log(`encounter large query, use direct fetch`);
+                return this.token.then(token => getEvents(this.calId, token, null,
+                        start.toISOString(), end.toISOString()).then(r => {
+                    let results = [];
+                    r.results.forEach(e => {
+                        console.assert(e.start);
+                        e.start = new Date(e.start.dateTime);
+                        e.end = new Date(e.end.dateTime);
+                        results.push(e);
+                    });
+                    return results.filter(e => !(e.start >= end || e.end <= start)).map(e => {
+                        return {
+                            id: e.id,
+                            start: e.start < start ? start: e.start,
+                            end: e.end > end ? end: e.end,
+                            summary: e.summary,
+                        };
+                    });
+                }));
+            }
+
+            console.log(`fetching short event list`);
+            return this.token.then(token => getEvents(this.calId, token, null,
+                this.slotStartDate(query.start).toISOString(),
+                this.slotEndDate(query.end).toISOString()).then(r => {
+                    if (this.syncToken === '')
+                        this.syncToken = r.nextSyncToken;
+                    return r.results.forEach(e => {
+                        if (e.status === 'confirmed')
+                        {
+                            console.assert(e.start);
+                            e.start = new Date(e.start.dateTime);
+                            e.end = new Date(e.end.dateTime);
+                            this.addEvent(e, true);
+                        }
+                    });
+                })).then(() => this.sync())
+                .then(() => this.getCachedEvents({ start, end }));
+        }
+        else
+        {
+            console.log(`cache hit`);
+            return this.sync().then(() => this.getCachedEvents({ start, end }));
+        }
     }
 }

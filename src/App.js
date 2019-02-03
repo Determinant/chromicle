@@ -174,22 +174,28 @@ class Dashboard extends React.Component {
         let event_pms = [];
         let cals = this.state.calendars;
         for (let id in cals)
-            event_pms.push(this.getCalEvents(id, start, end)
-                .then(r => { return { id, events: r }; }));
-        console.log(cals);
+        {
+            let patterns = filterPatterns(this.state.patterns, cals[id].name);
+            if (patterns.length > 0)
+                event_pms.push(this.getCalEvents(id, start, end)
+                    .then(r => { return { id, events: r, patterns }; }));
+        }
         Promise.all(event_pms).then(all_events => {
             console.log(all_events);
             let events = {};
+            let patterns = {};
             let results = {}; // pattern idx => time
             let cal_results = {}; // cal id => time
-            all_events.forEach(e => events[e.id] = e.events);
+            all_events.forEach(e => {
+                events[e.id] = e.events;
+                patterns[e.id] = e.patterns;
+            });
             for (let i = 0; i < this.state.patterns.length; i++)
                 results[i] = 0;
             for (let id in cals) {
                 if (!events[id]) continue;
-                let patterns = filterPatterns(this.state.patterns, cals[id].name);
                 events[id].forEach(event => {
-                    patterns.forEach(p => {
+                    patterns[id].forEach(p => {
                         if (!p.event.regex.test(event.summary)) return;
                         if (!cal_results.hasOwnProperty(id)) {
                             cal_results[id] = 0;
