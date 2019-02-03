@@ -1,3 +1,4 @@
+/* global chrome */
 const _updatePatterns = "updatePatterns";
 const _getPatterns = "getPatterns";
 const _updateCalendars = "updateCalendars";
@@ -47,4 +48,36 @@ export class Msg {
         }
     }
     static inflate = obj => new Msg(obj.id, parseMsgType(obj.type), obj.data);
+}
+
+export class MsgClient {
+    constructor(channelName) {
+        let port = chrome.runtime.connect({name: channelName});
+        const getCallBack = rcb => this.requestCallback;
+        port.onMessage.addListener(function(msg) {
+            console.log(msg);
+            let rcb = getCallBack(msg.type);
+            let cb = rcb.inFlight[msg.id];
+            console.assert(cb !== undefined);
+            rcb.ids.push(msg.id);
+            cb(msg);
+        });
+        this.port = port;
+        this.requestCallback = {inFlight: {}, ids: [], maxId: 0};
+    }
+
+    sendMsg = ({ type, data }) => {
+        let rcb = this.requestCallback;
+        let cb;
+        let pm = new Promise(resolve => { cb = resolve; });
+        let id;
+        if (rcb.ids.length > 0) {
+            id = rcb.ids.pop();
+        } else {
+            id = rcb.maxId++;
+        }
+        rcb.inFlight[id] = cb;
+        this.port.postMessage((new Msg(id, type, data)).deflate());
+        return pm;
+    }
 }
