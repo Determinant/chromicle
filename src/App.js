@@ -20,6 +20,7 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 import Logo from './Logo';
 import * as gapi from './gapi';
+import { msgType, Msg } from './msg';
 import { Pattern, PatternEntry } from './pattern';
 import PieChart from './Chart';
 import PatternTable from './PatternTable';
@@ -81,21 +82,21 @@ class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         let port = chrome.runtime.connect({name: 'main'});
-        const getCallBack = t => this.requestCallback[t];
+        const getCallBack = rcb => this.requestCallback;
         port.onMessage.addListener(function(msg) {
             console.log(msg);
-            let t = getCallBack(msg.type);
-            let e = t.inFlight[msg.id];
-            console.assert(e !== undefined);
-            t.ids.push(msg.id);
-            e(msg);
+            let rcb = getCallBack(msg.type);
+            let cb = rcb.inFlight[msg.id];
+            console.assert(cb !== undefined);
+            rcb.ids.push(msg.id);
+            cb(msg);
         });
         this.port = port;
-        this.requestCallback = {};
-        this.sendMsg({ type: 1 }).then(msg => {
+        this.requestCallback = {inFlight: {}, ids: [], maxId: 0};
+        this.sendMsg({ type: msgType.getPatterns }).then(msg => {
             this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
         });
-        this.sendMsg({ type: 3 }).then(msg => {
+        this.sendMsg({ type: msgType.getCalendars }).then(msg => {
             this.setState({ calendars: msg.data });
         });
     }
@@ -104,7 +105,7 @@ class Dashboard extends React.Component {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
         this.setState({ patterns });
-        this.sendMsg({ type: 0, data: patterns });
+        this.sendMsg({ type: msgType.updatePatterns, data: patterns });
     };
 
     removePattern = idx => {
@@ -113,7 +114,7 @@ class Dashboard extends React.Component {
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
         this.setState({ patterns });
-        this.sendMsg({ type: 0, data: patterns });
+        this.sendMsg({ type: msgType.updatePatterns, data: patterns });
     };
 
     newPattern = () => {
@@ -121,39 +122,36 @@ class Dashboard extends React.Component {
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
         this.setState({ patterns });
-        this.sendMsg({ type: 0, data: patterns });
+        this.sendMsg({ type: msgType.updatePatterns, data: patterns });
     };
 
     loadPatterns = patterns => {
         this.setState({ patterns });
-        this.sendMsg({ type: 0, data: patterns });
+        this.sendMsg({ type: msgType.updatePatterns, data: patterns });
     };
 
     loadCalendars = calendars => {
         this.setState({ calendars });
-        this.sendMsg({ type: 5, data: calendars });
+        this.sendMsg({ type: msgType.updateCalendars, data: calendars });
     };
 
-    sendMsg = msg => {
-        if (!this.requestCallback.hasOwnProperty(msg.type))
-            this.requestCallback[msg.type] = {inFlight: {}, ids: [], maxId: 0};
-        let t = this.requestCallback[msg.type];
+    sendMsg = ({ type, data }) => {
+        let rcb = this.requestCallback;
         let cb;
         let pm = new Promise(resolve => { cb = resolve; });
         let id;
-        if (t.ids.length > 0) {
-            id = t.ids.pop();
+        if (rcb.ids.length > 0) {
+            id = rcb.ids.pop();
         } else {
-            id = t.maxId++;
+            id = rcb.maxId++;
         }
-        t.inFlight[id] = cb;
-        msg.id = id;
-        this.port.postMessage(msg);
+        rcb.inFlight[id] = cb;
+        this.port.postMessage((new Msg(id, type, data)).deflate());
         return pm;
     }
 
     getCalEvents = (id, start, end) => {
-        return this.sendMsg({ type: 4, data: { id,
+        return this.sendMsg({ type: msgType.getCalEvents, data: { id,
                     start: start.getTime(),
                     end: end.getTime() } })
             .then(({ data }) => data.map(e => {

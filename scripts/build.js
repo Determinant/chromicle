@@ -3,7 +3,9 @@ var browserify = require("browserify");
 var babelify = require("babelify");
 
 browserify({ debug: true })
-    .transform(babelify.configure({ presets: ["@babel/preset-env"] }))
+    .transform(babelify.configure({
+        presets: ["@babel/preset-env"],
+        plugins: ["@babel/plugin-proposal-class-properties"]}))
     .require("./src/background.js", { entry: true })
     .bundle()
     .on("error", function (err) { console.log("Error: " + err.message); })

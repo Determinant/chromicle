@@ -202,16 +202,18 @@ export class GCalendar {
 
     sync() {
         return this.token.then(token => getEvents(this.calId, token, this.syncToken).then(r => {
-            this.syncToken = r.nextSyncToken;
-            let pm_results = r.results.map(e => e.start ? Promise.resolve(e) : getEvent(this.calId, e.id, token));
-            return Promise.all(pm_results).then(results => results.forEach(e => {
-                e.start = new Date(e.start.dateTime);
-                e.end = new Date(e.end.dateTime);
-                if (e.status === 'confirmed')
-                    this.addEvent(e);
-                else if (e.status === 'cancelled')
-                    this.removeEvent(e);
-            }));
+            let pms = r.results.map(e => e.start ? Promise.resolve(e) : getEvent(this.calId, e.id, token));
+            return Promise.all(pms).then(results => {
+                results.forEach(e => {
+                    e.start = new Date(e.start.dateTime);
+                    e.end = new Date(e.end.dateTime);
+                    if (e.status === 'confirmed')
+                        this.addEvent(e);
+                    else if (e.status === 'cancelled')
+                        this.removeEvent(e);
+                });
+                this.syncToken = r.nextSyncToken;
+            });
         })).catch(e => {
             if (e === GApiError.invalidSyncToken) {
                 this.syncToken = '';
@@ -260,9 +262,7 @@ export class GCalendar {
             return this.token.then(token => getEvents(this.calId, token, null,
                 this.slotStartDate(query.start).toISOString(),
                 this.slotEndDate(query.end).toISOString()).then(r => {
-                    if (this.syncToken === '')
-                        this.syncToken = r.nextSyncToken;
-                    return r.results.forEach(e => {
+                    r.results.forEach(e => {
                         if (e.status === 'confirmed')
                         {
                             console.assert(e.start);
@@ -271,6 +271,8 @@ export class GCalendar {
                             this.addEvent(e, true);
                         }
                     });
+                    if (this.syncToken === '')
+                        this.syncToken = r.nextSyncToken;
                 })).then(() => this.sync())
                 .then(() => this.getCachedEvents({ start, end }));
         }
