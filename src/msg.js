@@ -20,6 +20,7 @@ function stringifyMsgType(mt) {
         case msgType.updateCalendars: return _updateCalendars;
         case msgType.getCalendars: return _getCalendars;
         case msgType.getCalEvents: return _getCalEvents;
+        default: console.error("unreachable");
     }
 }
 
@@ -30,6 +31,7 @@ function parseMsgType(s) {
         case _updateCalendars: return msgType.updateCalendars;
         case _getCalendars: return msgType.getCalendars;
         case _getCalEvents: return msgType.getCalEvents;
+        default: console.error("unreachable");
     }
 }
 

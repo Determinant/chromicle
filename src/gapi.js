@@ -2,19 +2,68 @@
 import LRU from "lru-cache";
 const gapi_base = 'https://www.googleapis.com/calendar/v3';
 
-const GApiError = {
-    invalidSyncToken: 1,
-    otherError: 2,
-};
+const GApiError = Object.freeze({
+    invalidSyncToken: Symbol("invalidSyncToken"),
+    notLoggedIn: Symbol("notLoggedIn"),
+    notLoggedOut: Symbol("notLoggedOut"),
+    otherError: Symbol("otherError"),
+});
 
 function to_params(dict) {
     return Object.entries(dict).filter(([k, v]) => v).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
 }
 
-export function getAuthToken() {
+let loggedIn = null;
+
+function _getAuthToken(interactive = false) {
     return new Promise(resolver =>
         chrome.identity.getAuthToken(
-            {interactive: true}, token => resolver(token)));
+            { interactive }, token => resolver([token, !chrome.runtime.lastError])))
+            .then(([token, ok]) => {
+                if (ok) return token;
+                else throw GApiError.notLoggedIn;
+            });
+}
+
+function _removeCachedAuthToken(token) {
+    return new Promise(resolver =>
+        chrome.identity.removeCachedAuthToken({ token }, () => resolver()));
+}
+
+export function getLoggedIn() {
+    if (loggedIn === null)
+    {
+        return _getAuthToken(false)
+            .then(() => {loggedIn = true})
+            .catch(() => {loggedIn = false; console.log("here");})
+            .then(() => loggedIn);
+    }
+    else return Promise.resolve(loggedIn);
+}
+
+export function getAuthToken() {
+    return getLoggedIn().then(b => {
+        if (b) return _getAuthToken(false);
+        else throw GApiError.notLoggedIn;
+    });
+}
+
+export function login() {
+    return getLoggedIn().then(b => {
+        if (!b) return _getAuthToken(true).then(() => loggedIn = true);
+        else throw GApiError.notLoggedOut;
+    });
+}
+
+export function logout() {
+    return getAuthToken().then(token => {
+        return fetch(`https://accounts.google.com/o/oauth2/revoke?${to_params({ token })}`,
+                    { method: 'GET', async: true }).then(response => {
+            if (response.status === 200)
+                return _removeCachedAuthToken(token);
+            else throw GApiError.otherError;
+        });
+    }).then(() => loggedIn = false);
 }
 
 export function getCalendars(token) {
@@ -51,7 +100,7 @@ function getEvents(calId, token, syncToken=null, timeMin=null, timeMax=null, res
                     return response.json();
                 else if (response.status === 410)
                     throw GApiError.invalidSyncToken;
-                else throw GApiError.otherErrors;
+                else throw GApiError.otherError;
             })
             .then(data => {
                 results.push(...data.items);
@@ -72,7 +121,6 @@ export class GCalendar {
     constructor(calId, name, options={maxCachedItems: 100, nDaysPerSlot: 10, largeQuery: 10}) {
         this.calId = calId;
         this.name = name;
-        this.token = getAuthToken();
         this.syncToken = '';
         this.cache = new LRU({
             max: options.maxCachedItems,
@@ -82,6 +130,8 @@ export class GCalendar {
         this.options = options;
         this.divider = 8.64e7 * this.options.nDaysPerSlot;
     }
+
+    get token() { return getAuthToken(); }
 
     dateToCacheKey(date) {
         return Math.floor(date / this.divider);
