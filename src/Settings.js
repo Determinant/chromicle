@@ -7,6 +7,7 @@ import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
 import Grid from '@material-ui/core/Grid';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 import Table from '@material-ui/core/Table';
@@ -14,11 +15,28 @@ import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@material-ui/core/Checkbox';
 import * as gapi from './gapi';
 import { msgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
+import PatternTable from './PatternTable';
 
 const styles = theme => ({
+    tableHead: {
+        verticalAlign: 'top',
+        textAlign: 'right',
+        lineHeight: '3em',
+    },
+    tableContent: {
+        textAlign: 'left',
+    },
+    calendarList: {
+        maxHeight: 400,
+        overflowY: 'auto'
+    }
 });
 
 const STableCell = withStyles(theme => ({
@@ -27,48 +45,194 @@ const STableCell = withStyles(theme => ({
     },
 }))(TableCell);
 
+const CompactListItem = withStyles(theme => ({
+    dense: {
+        paddingTop: 0,
+        paddingBottom: 0
+    },
+}))(ListItem);
+
 class Settings extends React.Component {
     state = {
-        isLoggedIn: false
+        isLoggedIn: false,
+        patterns: [],
+        calendars: {},
     };
 
     constructor(props) {
         super(props);
+        this.msgClient = new MsgClient('main');
         gapi.getLoggedIn().then(b => this.setState({ isLoggedIn: b }));
+        this.msgClient.sendMsg({
+            type: msgType.getPatterns,
+            data: { id: 'main' }
+        }).then(msg => {
+            this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
+        });
+        this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: false } }).then(msg => {
+            this.setState({ calendars: msg.data });
+        });
     }
 
     handleLogin = () => {
-        gapi.login().then(() => this.setState({ isLoggedIn: true }));
+        gapi.login().then(() => {
+            this.setState({ isLoggedIn: true });
+            this.loadAll(true);
+        });
     }
 
     handleLogout = () => {
-        gapi.logout().then(() => this.setState({ isLoggedIn: false }));
+        gapi.logout().then(() => {
+            this.setState({ isLoggedIn: false });
+            this.loadPatterns([], 'analyze');
+        });
     }
+
+    handleToggleCalendar = id => {
+        var calendars = {...this.state.calendars};
+        calendars[id].enabled = !calendars[id].enabled;
+        this.msgClient.sendMsg({ type: msgType.updateCalendars, data: calendars }).then(() =>
+            this.setState({ calendars }));
+    }
+
+    loadAll = loadDefaultPatterns => {
+        let colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
+            return color.calendar;
+        });
+        let cals = gapi.getAuthToken().then(gapi.getCalendars);
+        Promise.all([colors, cals]).then(([colors, items]) => {
+            var cals = {};
+            items.forEach(item => {
+                cals[item.id] = {
+                    name: item.summary,
+                    color: colors[item.colorId],
+                    enabled: true
+                    //cal: new gapi.GCalendar(item.id, item.summary)
+                }});
+            this.loadCalendars(cals);
+            if (loadDefaultPatterns)
+            {
+                this.loadPatterns(items.map((item, idx) => {
+                    return new PatternEntry(item.summary, idx,
+                        new Pattern(item.id, false, item.summary, item.summary),
+                        Pattern.anyPattern());
+                }), 'main');
+            }
+        });
+    };
+
+    loadCalendars = calendars => {
+        for (let id in this.state.calendars) {
+            if (calendars.hasOwnProperty(id))
+                calendars[id].enabled = this.state.calendars[id].enabled;
+        }
+        this.msgClient.sendMsg({ type: msgType.updateCalendars, data: calendars }).then(() =>
+            this.setState({ calendars }));
+    };
+
+    loadPatterns = (patterns, id) => {
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id, patterns }
+        }).then(() => this.setState({ patterns }));
+    };
+
+    updatePattern = (field, idx, value) => {
+        let patterns = this.state.patterns;
+        patterns[idx][field] = value;
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'main', patterns }
+        }).then(() => this.setState({ patterns }));
+    };
+
+    removePattern = idx => {
+        let patterns = this.state.patterns;
+        patterns.splice(idx, 1);
+        for (let i = 0; i < patterns.length; i++)
+            patterns[i].idx = i;
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'main', patterns }
+        }).then(() => this.setState({ patterns }));
+    };
+
+    newPattern = () => {
+        let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
+        for (let i = 1; i < patterns.length; i++)
+            patterns[i].idx = i;
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'main', patterns }
+        }).then(() => this.setState({ patterns }));
+    };
 
     render() {
         const { classes } = this.props;
         return (
-            <Grid container spacing={16}>
-                <Grid item md={6} xs={12}>
-                    <Typography variant="h6" component="h1" gutterBottom>
-                        General
-                    </Typography>
-                    <Table>
-                        <TableBody>
-                            <TableRow>
-                                <STableCell align='right'>Account</STableCell>
-                                <STableCell align='left'>
-                                    {
-                                        (this.state.isLoggedIn &&
-                                            <Button variant="contained" color="primary" onClick={this.handleLogout}>Logout</Button>) ||
-                                            <Button variant="contained" color="primary" onClick={this.handleLogin}>Login</Button>
-                                    }
-                                </STableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </Grid>
-            </Grid>
+            <div>
+               <Typography variant="h6" component="h1" gutterBottom>
+                   General
+               </Typography>
+               <Table>
+                   <TableBody>
+                       <TableRow>
+                           <STableCell className={classes.tableHead}>Account</STableCell>
+                           <STableCell align='left'>
+                               {
+                                   (this.state.isLoggedIn &&
+                                       <Button variant="contained" color="primary" onClick={this.handleLogout}>Logout</Button>) ||
+                                       <Button variant="contained" color="primary" onClick={this.handleLogin}>Login</Button>
+                               }
+                           </STableCell>
+                       </TableRow>
+                       <TableRow>
+                           <STableCell className={classes.tableHead}>
+                           <IconButton
+                               style={{marginBottom: '0.12em', marginRight: '0.5em'}}
+                               onClick={() => this.loadAll(false)}
+                               disabled={!this.state.isLoggedIn}><RefreshIcon /></IconButton>
+                               Calendars
+                           </STableCell>
+                           <STableCell className={classes.tableContent}>
+                               {(this.state.isLoggedIn &&
+                               <List className={classes.calendarList}>
+                                   {Object.keys(this.state.calendars).map(id =>
+                                       <CompactListItem
+                                           key={id}
+                                           onClick={() => this.handleToggleCalendar(id)}
+                                           disableGutters
+                                           dense button >
+                                       <Checkbox
+                                           checked={this.state.calendars[id].enabled}
+                                           disableRipple />
+                                       <ListItemText primary={this.state.calendars[id].name} />
+                                       </CompactListItem>)}
+                               </List>) || 'Please Login.'}
+                           </STableCell>
+                       </TableRow>
+                       <TableRow>
+                           <STableCell className={classes.tableHead}>
+                               <IconButton
+                                   style={{marginBottom: '0.12em', marginRight: '0.5em'}}
+                                   onClick={() => this.newPattern()}
+                                   disabled={!this.state.isLoggedIn}><AddCircleIcon /></IconButton>
+                               Tracked Events
+                           </STableCell>
+                           <STableCell className={classes.tableContent}>
+                               {(this.state.isLoggedIn &&
+                               <FormControl fullWidth={true}>
+                               <PatternTable
+                                   patterns={this.state.patterns}
+                                   calendars={this.state.calendars}
+                                   onRemovePattern={this.removePattern}
+                                   onUpdatePattern={this.updatePattern} />
+                               </FormControl>) || 'Please Login.'}
+                           </STableCell>
+                       </TableRow>
+                   </TableBody>
+               </Table>
+            </div>
         );
     }
 }

@@ -38,20 +38,23 @@ const styles = theme => ({
 class CustomAnalyzer extends React.Component {
     state = {
         patterns: [],
-        calendars: [],
-        timeRange: null,
+        calendars: {},
+        startDate: null,
+        endDate: null,
         patternGraphData: default_chart_data,
         calendarGraphData: default_chart_data,
-        activePattern: null
     };
 
     constructor(props) {
         super(props);
         this.msgClient = new MsgClient('main');
-        this.msgClient.sendMsg({ type: msgType.getPatterns }).then(msg => {
+        this.msgClient.sendMsg({
+            type: msgType.getPatterns,
+            data: { id: 'analyze' }
+        }).then(msg => {
             this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
         });
-        this.msgClient.sendMsg({ type: msgType.getCalendars }).then(msg => {
+        this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: true }}).then(msg => {
             this.setState({ calendars: msg.data });
         });
     }
@@ -59,8 +62,10 @@ class CustomAnalyzer extends React.Component {
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
-        this.setState({ patterns });
-        this.msgClient.sendMsg({ type: msgType.updatePatterns, data: patterns });
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'analyze', patterns }
+        }).then(() => this.setState({ patterns }));
     };
 
     removePattern = idx => {
@@ -68,26 +73,27 @@ class CustomAnalyzer extends React.Component {
         patterns.splice(idx, 1);
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.setState({ patterns });
-        this.msgClient.sendMsg({ type: msgType.updatePatterns, data: patterns });
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'analyze', patterns }
+        }).then(() => this.setState({ patterns }));
     };
 
     newPattern = () => {
         let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.setState({ patterns });
-        this.msgClient.sendMsg({ type: msgType.updatePatterns, data: patterns });
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'analyze', patterns }
+        }).then(() => this.setState({ patterns }));
     };
 
     loadPatterns = patterns => {
-        this.setState({ patterns });
-        this.msgClient.sendMsg({ type: msgType.updatePatterns, data: patterns });
-    };
-
-    loadCalendars = calendars => {
-        this.setState({ calendars });
-        this.msgClient.sendMsg({ type: msgType.updateCalendars, data: calendars });
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'analyze', patterns }
+        }).then(() => this.setState({ patterns }));
     };
 
     getCalEvents = (id, start, end) => {
@@ -160,27 +166,10 @@ class CustomAnalyzer extends React.Component {
         });
     };
 
-    load = () => {
-        let colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
-            return color.calendar;
-        });
-        let cals = gapi.getAuthToken().then(gapi.getCalendars);
-        Promise.all([colors, cals]).then(([colors, items]) => {
-            var cals = {};
-            items.forEach(item => {
-                cals[item.id] = {
-                    name: item.summary,
-                    color: colors[item.colorId],
-                    //cal: new gapi.GCalendar(item.id, item.summary)
-                }});
-            this.loadCalendars(cals);
-            this.loadPatterns(items.map((item, idx) => {
-                return new PatternEntry(item.summary, idx,
-                    new Pattern(item.id, false, item.summary, item.summary),
-                    Pattern.anyPattern());
-            }));
-        });
-    };
+    reset = () => {
+        this.loadPatterns([]);
+        this.setState({ startDate: null, endDate: null });
+    }
 
     render() {
         const { classes } = this.props;
@@ -191,7 +180,7 @@ class CustomAnalyzer extends React.Component {
                     <FormControl fullWidth={true}>
                         <FormGroup>
                             <Typography variant="h6" component="h1" gutterBottom>
-                                Event Patterns
+                                Analyzed Events
                                 <IconButton
                                     style={{marginBottom: '0.12em', marginLeft: '0.5em'}}
                                     onClick={() => this.newPattern()}><AddCircleIcon /></IconButton>
@@ -224,12 +213,12 @@ class CustomAnalyzer extends React.Component {
                         <Grid container spacing={16}>
                             <Grid item md={6} xs={12}>
                                 <FormGroup>
-                                    <Button variant="contained" color="primary" onClick={this.load}>Load</Button>
+                                    <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
                                 </FormGroup>
                             </Grid>
                             <Grid item md={6} xs={12}>
                                 <FormGroup>
-                                    <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
+                                    <Button variant="contained" color="primary" onClick={this.reset}>Reset</Button>
                                 </FormGroup>
                             </Grid>
                         </Grid>
@@ -237,7 +226,7 @@ class CustomAnalyzer extends React.Component {
                 </Grid>
                 <Grid item md={6} xs={12}>
                     <Typography variant="h6" component="h1" gutterBottom>
-                        Graph
+                        Results
                     </Typography>
                     <PieChart
                         patternGraphData={this.state.patternGraphData}

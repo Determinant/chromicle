@@ -43,6 +43,7 @@ class PatternTable extends React.Component {
     state = {
         page: 0,
         rowsPerPage: 5,
+        activePattern: null
     };
 
     handleChangePage = (event, page) => {

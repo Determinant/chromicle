@@ -1,7 +1,8 @@
 import * as gapi from './gapi';
 import { msgType, Msg } from './msg';
 
-let patterns = [];
+let mainPatterns = [];
+let analyzePatterns = [];
 let calendars = {};
 let calData = {};
 
@@ -11,9 +12,18 @@ chrome.runtime.onConnect.addListener(function(port) {
         let msg = Msg.inflate(_msg);
         console.log(msg);
         if (msg.type == msgType.updatePatterns) {
-            patterns = msg.data;
+            if (msg.data.id == 'analyze')
+                analyzePatterns = msg.data.patterns;
+            else
+                mainPatterns = msg.data.patterns;
+            port.postMessage(msg.genResp(null));
         }
         else if (msg.type == msgType.getPatterns) {
+            let patterns;
+            if (msg.data.id == 'analyze')
+                patterns = analyzePatterns;
+            else
+                patterns = mainPatterns;
             port.postMessage(msg.genResp(patterns));
         }
         else if (msg.type == msgType.updateCalendars) {
@@ -22,9 +32,17 @@ chrome.runtime.onConnect.addListener(function(port) {
                 if (!calData.hasOwnProperty(id))
                     calData[id] = new gapi.GCalendar(id, calendars[id].summary);
             }
+            port.postMessage(msg.genResp(null));
         }
         else if (msg.type == msgType.getCalendars) {
-            port.postMessage(msg.genResp(calendars));
+            let cals = calendars;
+            if (msg.data.enabledOnly)
+            {
+                cals = Object.keys(calendars)
+                    .filter(id => calendars[id].enabled)
+                    .reduce((res, id) => (res[id] = calendars[id], res), {});
+            }
+            port.postMessage(msg.genResp(cals));
         }
         else if (msg.type == msgType.getCalEvents) {
             calData[msg.data.id].getEvents(new Date(msg.data.start), new Date(msg.data.end))
