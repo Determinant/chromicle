@@ -19,6 +19,7 @@ import { Pattern, PatternEntry } from './pattern';
 import PieChart from './Chart';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
+import AlertDialog from './Dialog';
 
 const default_chart_data = [
     {name: 'Work', value: 10, color: cyan[300]},
@@ -46,7 +47,9 @@ class CustomAnalyzer extends React.Component {
         calendarGraphData: default_chart_data,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
-        snackBarVariant: 'error'
+        snackBarVariant: 'error',
+        dialogOpen: false,
+        dialogMsg: {title: '', message: ''},
     };
 
     constructor(props) {
@@ -63,6 +66,7 @@ class CustomAnalyzer extends React.Component {
         });
         gapi.getLoggedIn().then(b => !b &&
             this.handleSnackbarOpen('Not logged in. Operating in offline mode.', 'warning'));
+        this.dialogPromiseResolver = null;
     }
 
     updatePattern = (field, idx, value) => {
@@ -116,7 +120,7 @@ class CustomAnalyzer extends React.Component {
 
     analyze = () => {
         if (!(this.state.startDate && this.state.endDate)) {
-            alert("Please choose a valid time range.");
+            this.handleSnackbarOpen('Please choose a valid time range.', 'error');
             return;
         }
         let start = this.state.startDate.startOf('day').toDate();
@@ -173,8 +177,23 @@ class CustomAnalyzer extends React.Component {
     };
 
     reset = () => {
-        this.loadPatterns([]);
-        this.setState({ startDate: null, endDate: null });
+        this.handleDialogOpen("Reset", "Are you sure to reset the patterns?").then(ans => {
+            if (!ans) return;
+            this.loadPatterns([]);
+            this.setState({ startDate: null, endDate: null });
+        });
+    }
+
+    default = () => {
+        this.handleDialogOpen("Load Default", "Load the calendars as patterns?").then(ans => {
+            if (!ans) return;
+            this.loadPatterns(Object.keys(this.state.calendars).map((id, idx) => {
+                let item = this.state.calendars[id];
+                return new PatternEntry(item.name, idx,
+                    new Pattern(id, false, item.name, item.name),
+                    Pattern.anyPattern());
+            }));
+        });
     }
 
     handleSnackbarClose = (event, reason) => {
@@ -186,11 +205,29 @@ class CustomAnalyzer extends React.Component {
         this.setState({ snackBarOpen: true, snackBarMsg: msg, snackBarVariant: variant });
     }
 
+    handleDialogOpen = (title, message) => {
+        let pm = new Promise(resolver => {
+            this.dialogPromiseResolver = resolver
+        });
+        this.setState({ dialogOpen: true, dialogMsg: {title, message} });
+        return pm;
+    }
+
+    handleDialogClose = result => {
+        this.dialogPromiseResolver(result);
+        this.setState({ dialogOpen: false });
+    }
+
     render() {
         const { classes } = this.props;
 
         return (
             <Grid container  spacing={16}>
+                <AlertDialog
+                    title={this.state.dialogMsg.title}
+                    message={this.state.dialogMsg.message}
+                    open={this.state.dialogOpen}
+                    handleClose={this.handleDialogClose}/>
                 <Snackbar
                     message={this.state.snackBarMsg}
                     open={this.state.snackBarOpen}
@@ -231,14 +268,19 @@ class CustomAnalyzer extends React.Component {
                         </FormGroup>
                         <div className={classes.buttonSpacer} />
                         <Grid container spacing={16}>
-                            <Grid item md={6} xs={12}>
+                            <Grid item md={4} xs={12}>
                                 <FormGroup>
-                                    <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
+                                    <Button variant="contained" color="primary" onClick={this.default}>Load Default</Button>
                                 </FormGroup>
                             </Grid>
-                            <Grid item md={6} xs={12}>
+                            <Grid item md={4} xs={12}>
                                 <FormGroup>
                                     <Button variant="contained" color="primary" onClick={this.reset}>Reset</Button>
+                                </FormGroup>
+                            </Grid>
+                            <Grid item md={4} xs={12}>
+                                <FormGroup>
+                                    <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
                                 </FormGroup>
                             </Grid>
                         </Grid>
