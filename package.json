@@ -7,8 +7,12 @@
     "start": "webpack --mode development --watch",
     "build": "webpack --mode production"
   },
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Ted Yin",
+    "email": "tederminant@gmail.com",
+    "url": "https://tedyin.com"
+  },
+  "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.3.0",
