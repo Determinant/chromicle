@@ -18,6 +18,7 @@ import { msgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
 import PieChart from './Chart';
 import PatternTable from './PatternTable';
+import Snackbar from './Snackbar';
 
 const default_chart_data = [
     {name: 'Work', value: 10, color: cyan[300]},
@@ -43,6 +44,9 @@ class CustomAnalyzer extends React.Component {
         endDate: null,
         patternGraphData: default_chart_data,
         calendarGraphData: default_chart_data,
+        snackBarOpen: false,
+        snackBarMsg: 'unknown',
+        snackBarVariant: 'error'
     };
 
     constructor(props) {
@@ -57,6 +61,8 @@ class CustomAnalyzer extends React.Component {
         this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: true }}).then(msg => {
             this.setState({ calendars: msg.data });
         });
+        gapi.getLoggedIn().then(b => !b &&
+            this.handleSnackbarOpen('Not logged in. Operating in offline mode.', 'warning'));
     }
 
     updatePattern = (field, idx, value) => {
@@ -171,11 +177,25 @@ class CustomAnalyzer extends React.Component {
         this.setState({ startDate: null, endDate: null });
     }
 
+    handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') return;
+        this.setState({ snackBarOpen: false });
+    }
+
+    handleSnackbarOpen = (msg, variant) => {
+        this.setState({ snackBarOpen: true, snackBarMsg: msg, snackBarVariant: variant });
+    }
+
     render() {
         const { classes } = this.props;
 
         return (
             <Grid container  spacing={16}>
+                <Snackbar
+                    message={this.state.snackBarMsg}
+                    open={this.state.snackBarOpen}
+                    variant={this.state.snackBarVariant}
+                    onClose={this.handleSnackbarClose}/>
                 <Grid item md={6} xs={12}>
                     <FormControl fullWidth={true}>
                         <FormGroup>

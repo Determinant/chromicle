@@ -34,8 +34,8 @@ export function getLoggedIn() {
     if (loggedIn === null)
     {
         return _getAuthToken(false)
-            .then(() => {loggedIn = true})
-            .catch(() => {loggedIn = false; console.log("here");})
+            .then(() => loggedIn = true)
+            .catch(() => loggedIn = false)
             .then(() => loggedIn);
     }
     else return Promise.resolve(loggedIn);

@@ -23,6 +23,8 @@ import * as gapi from './gapi';
 import { msgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
 import PatternTable from './PatternTable';
+import Snackbar from './Snackbar';
+import AlertDialog from './Dialog';
 
 const styles = theme => ({
     tableHead: {
@@ -32,6 +34,7 @@ const styles = theme => ({
     },
     tableContent: {
         textAlign: 'left',
+        maxWidth: 600,
     },
     calendarList: {
         maxHeight: 400,
@@ -57,6 +60,10 @@ class Settings extends React.Component {
         isLoggedIn: false,
         patterns: [],
         calendars: {},
+        snackBarOpen: false,
+        snackBarMsg: 'unknown',
+        dialogOpen: false,
+        dialogMsg: {title: '', message: ''},
     };
 
     constructor(props) {
@@ -72,19 +79,23 @@ class Settings extends React.Component {
         this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: false } }).then(msg => {
             this.setState({ calendars: msg.data });
         });
+        this.dialogPromiseResolver = null;
     }
 
     handleLogin = () => {
         gapi.login().then(() => {
             this.setState({ isLoggedIn: true });
             this.loadAll(true);
-        });
+        }).catch(() => this.handleSnackbarOpen("Failed to login!"));
     }
 
     handleLogout = () => {
-        gapi.logout().then(() => {
-            this.setState({ isLoggedIn: false });
-            this.loadPatterns([], 'analyze');
+        this.handleDialogOpen("Logout", "Are you sure to logout?").then(ans => {
+            if (!ans) return;
+            gapi.logout().then(() => {
+                this.setState({ isLoggedIn: false });
+                //this.loadPatterns([], 'analyze');
+            }).catch(() => this.handleSnackbarOpen("Failed to logout!"));
         });
     }
 
@@ -167,10 +178,42 @@ class Settings extends React.Component {
         }).then(() => this.setState({ patterns }));
     };
 
+    handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') return;
+        this.setState({ snackBarOpen: false });
+    }
+
+    handleSnackbarOpen = msg => {
+        this.setState({ snackBarOpen: true, snackBarMsg: msg });
+    }
+
+    handleDialogOpen = (title, message) => {
+        let pm = new Promise(resolver => {
+            this.dialogPromiseResolver = resolver
+        });
+        this.setState({ dialogOpen: true, dialogMsg: {title, message} });
+        return pm;
+    }
+
+    handleDialogClose = result => {
+        this.dialogPromiseResolver(result);
+        this.setState({ dialogOpen: false });
+    }
+
     render() {
         const { classes } = this.props;
         return (
             <div>
+                <AlertDialog
+                    title={this.state.dialogMsg.title}
+                    message={this.state.dialogMsg.message}
+                    open={this.state.dialogOpen}
+                    handleClose={this.handleDialogClose}/>
+                <Snackbar
+                    message={this.state.snackBarMsg}
+                    open={this.state.snackBarOpen}
+                    variant='error'
+                    onClose={this.handleSnackbarClose}/>
                <Typography variant="h6" component="h1" gutterBottom>
                    General
                </Typography>
@@ -178,7 +221,7 @@ class Settings extends React.Component {
                    <TableBody>
                        <TableRow>
                            <STableCell className={classes.tableHead}>Account</STableCell>
-                           <STableCell align='left'>
+                           <STableCell className={classes.tableContent}>
                                {
                                    (this.state.isLoggedIn &&
                                        <Button variant="contained" color="primary" onClick={this.handleLogout}>Logout</Button>) ||
