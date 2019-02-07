@@ -1,4 +1,0 @@
-Chromicle
----------
-
-Work-in-progress.

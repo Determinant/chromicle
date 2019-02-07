@@ -59,9 +59,9 @@ export function logout() {
     return getAuthToken().then(token => {
         return fetch(`https://accounts.google.com/o/oauth2/revoke?${to_params({ token })}`,
                     { method: 'GET', async: true }).then(response => {
-            if (response.status === 200)
-                return _removeCachedAuthToken(token);
-            else throw GApiError.otherError;
+            //if (response.status === 200)
+            return _removeCachedAuthToken(token);
+            //else throw GApiError.otherError;
         });
     }).then(() => loggedIn = false);
 }
