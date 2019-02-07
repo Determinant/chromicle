@@ -5,7 +5,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
     entry: {
         index: "./src/index.js",
-        background: "./src/background.js"
+        background: "./src/background.js",
+        popup: "./src/popup.js"
     },
     output: {
         path: path.join(__dirname, "/dist"),
@@ -29,15 +30,17 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: "./public/index.html"
+            chunks: ['index'],
+            template: "./src/index.html",
+            filename: "./index.html"
+        }),
+        new HtmlWebpackPlugin({
+            chunks: ['popup'],
+            template: "./src/index.html",
+            filename: "./popup.html"
         }),
         new CopyWebpackPlugin([
             {from:'./public/', to:'./'}
         ]),
     ],
-    optimization: {
-        splitChunks: {
-            chunks: 'all'
-        }
-    }
 };
