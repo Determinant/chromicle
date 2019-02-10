@@ -2,7 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = {
+module.exports = (env, argv) => ({
     entry: {
         index: "./src/index.js",
         background: "./src/background.js",
@@ -17,9 +17,7 @@ module.exports = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: "babel-loader"
-                },
+                use: ['babel-loader', 'eslint-loader']
             },
             {
                 test: /\.css$/,
@@ -42,5 +40,11 @@ module.exports = {
         new CopyWebpackPlugin([
             {from:'./public/', to:'./'}
         ]),
+        new CopyWebpackPlugin([
+            {
+                from: argv.mode == 'production' ? './manifest.prod.json' : './manifest.dev.json',
+                to: './manifest.json'
+            }
+        ]),
     ],
-};
+});

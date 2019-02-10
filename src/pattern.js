@@ -8,9 +8,17 @@ export class Pattern {
 
     get regex() { return new RegExp(this.isRegex ? this.value : `^${this.value}$`); }
     get isEmpty() { return this.label === null; }
+    deflate() {
+        return {
+            id: this.id,
+            isRegex: this.isRegex,
+            value: this.value,
+            label: this.label
+        };
+    }
     static emptyPattern = () => new Pattern(0, true, '', null);
     static anyPattern = () => new Pattern('any', true, '.*', 'Any');
-    static revive = obj => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
+    static inflate = obj => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
 }
 
 export class PatternEntry {
@@ -21,8 +29,17 @@ export class PatternEntry {
         this.event = eventPattern;
     }
 
+    deflate() {
+        return {
+            name: this.name,
+            idx: this.idx,
+            cal: this.cal.deflate(),
+            event: this.event.deflate()
+        };
+    }
+
     static defaultPatternEntry = (idx) => new PatternEntry('', idx, Pattern.emptyPattern(), Pattern.anyPattern());
-    static revive = obj => new PatternEntry(
+    static inflate = obj => new PatternEntry(
         obj.name, obj.idx,
-        Pattern.revive(obj.cal), Pattern.revive(obj.event));
+        Pattern.inflate(obj.cal), Pattern.inflate(obj.event));
 }

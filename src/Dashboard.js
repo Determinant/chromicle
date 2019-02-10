@@ -15,7 +15,7 @@ import { HashRouter as Router, withRouter, Route, Link, Redirect, Switch } from 
 import { hashHistory } from 'react-router';
 import Logo from './Logo';
 import theme from './theme';
-import CustomAnalyzer from './CustomAnalyzer';
+import Analyze from './Analyze';
 import Settings from './Settings';
 
 const styles = theme => ({
@@ -73,7 +73,7 @@ class DashboardTabs extends React.Component {
                 <main className={classes.content}>
                     <div className={classes.appBarSpacer} />
                     <Route exact path="/settings" component={Settings} />
-                    <Route exact path="/analyze" component={CustomAnalyzer} />
+                    <Route exact path="/analyze" component={Analyze} />
                     <Route exact path="/" render={() => <Redirect to="/settings" />}/>
                 </main>
             </div>

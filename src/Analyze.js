@@ -16,7 +16,7 @@ import IconButton from '@material-ui/core/IconButton';
 import * as gapi from './gapi';
 import { msgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
-import PieChart from './Chart';
+import { AnalyzePieChart, getChartData } from './Chart';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
@@ -25,19 +25,13 @@ const default_chart_data = [
     {name: 'Work', value: 10, color: cyan[300]},
     {name: 'Wasted', value: 10, color: cyan[300]}];
 
-function filterPatterns(patterns, calName) {
-    return patterns.filter(p => {
-        return p.cal.regex.test(calName);
-    });
-}
-
 const styles = theme => ({
     buttonSpacer: {
         marginBottom: theme.spacing.unit * 4,
     },
 });
 
-class CustomAnalyzer extends React.Component {
+class Analyze extends React.Component {
     state = {
         patterns: [],
         calendars: {},
@@ -55,27 +49,38 @@ class CustomAnalyzer extends React.Component {
     constructor(props) {
         super(props);
         this.msgClient = new MsgClient('main');
+
         this.msgClient.sendMsg({
             type: msgType.getPatterns,
             data: { id: 'analyze' }
         }).then(msg => {
-            this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
+            this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
         });
-        this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: true }}).then(msg => {
+
+        this.msgClient.sendMsg({
+            type: msgType.getCalendars,
+            data: { enabledOnly: true }
+        }).then(msg => {
             this.setState({ calendars: msg.data });
         });
+
         gapi.getLoggedIn().then(b => !b &&
             this.handleSnackbarOpen('Not logged in. Operating in offline mode.', 'warning'));
+
         this.dialogPromiseResolver = null;
     }
+
+    loadPatterns = patterns => {
+        this.msgClient.sendMsg({
+            type: msgType.updatePatterns,
+            data: { id: 'analyze', patterns: patterns.map(p => p.deflate()) }
+        }).then(() => this.setState({ patterns }));
+    };
 
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'analyze', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     removePattern = idx => {
@@ -83,27 +88,14 @@ class CustomAnalyzer extends React.Component {
         patterns.splice(idx, 1);
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'analyze', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     newPattern = () => {
         let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'analyze', patterns }
-        }).then(() => this.setState({ patterns }));
-    };
-
-    loadPatterns = patterns => {
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'analyze', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     getCalEvents = (id, start, end) => {
@@ -125,56 +117,13 @@ class CustomAnalyzer extends React.Component {
         }
         let start = this.state.startDate.startOf('day').toDate();
         let end = this.state.endDate.startOf('day').toDate();
-        let event_pms = [];
-        let cals = this.state.calendars;
-        for (let id in cals)
-        {
-            let patterns = filterPatterns(this.state.patterns, cals[id].name);
-            if (patterns.length > 0)
-                event_pms.push(this.getCalEvents(id, start, end)
-                    .then(r => { return { id, events: r, patterns }; }));
-        }
-        Promise.all(event_pms).then(all_events => {
-            console.log(all_events);
-            let events = {};
-            let patterns = {};
-            let results = {}; // pattern idx => time
-            let cal_results = {}; // cal id => time
-            all_events.forEach(e => {
-                events[e.id] = e.events;
-                patterns[e.id] = e.patterns;
-            });
-            for (let i = 0; i < this.state.patterns.length; i++)
-                results[i] = 0;
-            for (let id in cals) {
-                if (!events[id]) continue;
-                events[id].forEach(event => {
-                    patterns[id].forEach(p => {
-                        if (!p.event.regex.test(event.summary)) return;
-                        if (!cal_results.hasOwnProperty(id)) {
-                            cal_results[id] = 0;
-                        }
-                        let duration = (event.end - event.start) / 60000;
-                        results[p.idx] += duration;
-                        cal_results[id] += duration;
-                    });
-                });
-            }
-            let patternGraphData = [];
-            let calendarGraphData = [];
-            for (let i = 0; i < this.state.patterns.length; i++) {
-                patternGraphData.push({ name: this.state.patterns[i].name, value: results[i] / 60.0 });
-            }
-            for (let id in cal_results) {
-                calendarGraphData.push({
-                    name: cals[id].name,
-                    value: (cal_results[id] / 60.0),
-                    color: cals[id].color.background});
-            }
-            console.log(patternGraphData, calendarGraphData);
-            this.setState({ patternGraphData, calendarGraphData });
+        getChartData(start, end,
+                    this.state.patterns,
+                    this.state.calendars,
+                    this.getCalEvents).then(results => {
+            this.setState(results);
         });
-    };
+    }
 
     reset = () => {
         this.handleDialogOpen("Reset", "Are you sure to reset the patterns?").then(ans => {
@@ -290,7 +239,7 @@ class CustomAnalyzer extends React.Component {
                     <Typography variant="h6" component="h1" gutterBottom>
                         Results
                     </Typography>
-                    <PieChart
+                    <AnalyzePieChart
                         patternGraphData={this.state.patternGraphData}
                         calendarGraphData={this.state.calendarGraphData}/>
                 </Grid>
@@ -299,8 +248,8 @@ class CustomAnalyzer extends React.Component {
     }
 }
 
-CustomAnalyzer.propTypes = {
+Analyze.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(CustomAnalyzer);
+export default withStyles(styles)(Analyze);

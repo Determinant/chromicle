@@ -25,6 +25,10 @@ import { Pattern, PatternEntry } from './pattern';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
+import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import { Duration } from './duration';
 
 const styles = theme => ({
     tableHead: {
@@ -39,7 +43,7 @@ const styles = theme => ({
     calendarList: {
         maxHeight: 400,
         overflowY: 'auto'
-    }
+    },
 });
 
 const STableCell = withStyles(theme => ({
@@ -55,11 +59,61 @@ const CompactListItem = withStyles(theme => ({
     },
 }))(ListItem);
 
+class TrackedPeriod extends React.Component {
+    valueOnChange = (old, onChange) => event => {
+        onChange(new Duration(event.target.value, old.unit));
+    }
+
+    unitOnChange = (old, onChange) => event => {
+        onChange(new Duration(old.value, event.target.value));
+    }
+
+    static styles = {
+        periodName: {
+            textAlign: 'right'
+        },
+        periodValue: {
+            width: 30,
+            textAlign: 'center'
+        }
+    };
+
+    render() {
+        let { classes, fromDuration, toDuration, nameOnChange, fromOnChange, toOnChange, name } = this.props;
+        let units = [
+            <MenuItem key='days' value='days'>Day(s)</MenuItem>,
+            <MenuItem key='weeks' value='weeks'>Week(s)</MenuItem>,
+            <MenuItem key='months' value='months'>Month(s)</MenuItem>
+        ];
+        return (
+            <span>
+                <TextField
+                    inputProps={{ style: TrackedPeriod.styles.periodName}}
+                    value={name}
+                    onChange={event => nameOnChange(event.target.value)}/>:
+                from <TextField
+                    inputProps={{style: TrackedPeriod.styles.periodValue}}
+                    value={fromDuration.value}
+                    onChange={this.valueOnChange(fromDuration, fromOnChange)} />
+                <Select value={fromDuration.unit}
+                    onChange={this.unitOnChange(fromDuration, fromOnChange)}>{units}</Select> ago
+                to <TextField
+                    inputProps={{style: TrackedPeriod.styles.periodValue}}
+                    value={toDuration.value}
+                    onChange={this.valueOnChange(toDuration, toOnChange)} />
+                <Select value={toDuration.unit}
+                    onChange={this.unitOnChange(toDuration, toOnChange)}>{units}</Select> ago
+            </span>
+        );
+    }
+}
+
 class Settings extends React.Component {
     state = {
         isLoggedIn: false,
         patterns: [],
         calendars: {},
+        config: {},
         snackBarOpen: false,
         snackBarMsg: 'unknown',
         dialogOpen: false,
@@ -68,17 +122,41 @@ class Settings extends React.Component {
 
     constructor(props) {
         super(props);
-        this.msgClient = new MsgClient('main');
         gapi.getLoggedIn().then(b => this.setState({ isLoggedIn: b }));
+
+        this.msgClient = new MsgClient('main');
+
         this.msgClient.sendMsg({
             type: msgType.getPatterns,
             data: { id: 'main' }
         }).then(msg => {
-            this.setState({ patterns: msg.data.map(p => PatternEntry.revive(p)) });
+            this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
         });
-        this.msgClient.sendMsg({ type: msgType.getCalendars, data: { enabledOnly: false } }).then(msg => {
+
+        this.msgClient.sendMsg({
+            type: msgType.getCalendars,
+            data: { enabledOnly: false }
+        }).then(msg => {
             this.setState({ calendars: msg.data });
         });
+
+        this.msgClient.sendMsg({
+            type: msgType.getConfig,
+            data: ['trackedPeriods']
+        }).then(msg => {
+            let config = {
+                trackedPeriods: msg.data.trackedPeriods.map(p => {
+                    return {
+                        start: Duration.inflate(p.start),
+                        end: Duration.inflate(p.end),
+                        name: p.name
+                    };
+                })
+            };
+            console.log(msg.data.trackedPeriods);
+            this.setState({ config });
+        });
+
         this.dialogPromiseResolver = null;
     }
 
@@ -102,8 +180,10 @@ class Settings extends React.Component {
     handleToggleCalendar = id => {
         var calendars = {...this.state.calendars};
         calendars[id].enabled = !calendars[id].enabled;
-        this.msgClient.sendMsg({ type: msgType.updateCalendars, data: calendars }).then(() =>
-            this.setState({ calendars }));
+        this.msgClient.sendMsg({
+            type: msgType.updateCalendars,
+            data: calendars
+        }).then(() => this.setState({ calendars }));
     }
 
     loadAll = loadDefaultPatterns => {
@@ -137,24 +217,23 @@ class Settings extends React.Component {
             if (calendars.hasOwnProperty(id))
                 calendars[id].enabled = this.state.calendars[id].enabled;
         }
-        this.msgClient.sendMsg({ type: msgType.updateCalendars, data: calendars }).then(() =>
-            this.setState({ calendars }));
+        this.msgClient.sendMsg({
+            type: msgType.updateCalendars,
+            data: calendars
+        }).then(() => this.setState({ calendars }));
     };
 
     loadPatterns = (patterns, id) => {
         this.msgClient.sendMsg({
             type: msgType.updatePatterns,
-            data: { id, patterns }
+            data: { id, patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
 
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'main', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     removePattern = idx => {
@@ -162,20 +241,14 @@ class Settings extends React.Component {
         patterns.splice(idx, 1);
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'main', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     newPattern = () => {
         let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
-            data: { id: 'main', patterns }
-        }).then(() => this.setState({ patterns }));
+        this.loadPatterns(patterns);
     };
 
     handleSnackbarClose = (event, reason) => {
@@ -198,6 +271,31 @@ class Settings extends React.Component {
     handleDialogClose = result => {
         this.dialogPromiseResolver(result);
         this.setState({ dialogOpen: false });
+    }
+
+    updateTrackedPeriods = trackedPeriods => {
+        this.msgClient.sendMsg({
+            type: msgType.updateConfig,
+            data: { trackedPeriods: trackedPeriods.map(p => p.deflate()) }
+        }).then(() => this.setState({...this.state.config, trackedPeriods }));
+    }
+
+    handlePeriodNameChange = idx => name => {
+        let trackedPeriods = [...this.state.config.trackedPeriods];
+        trackedPeriods[idx].name = name;
+        this.updateTrackedPeriods(trackedPeriods);
+    }
+
+    handlePeriodFromChange = idx => duration => {
+        let trackedPeriods = [...this.state.config.trackedPeriods];
+        trackedPeriods[idx].start = duration;
+        this.updateTrackedPeriods(trackedPeriods);
+    }
+
+    handlePeriodToChange = idx => duration => {
+        let trackedPeriods = [...this.state.config.trackedPeriods];
+        trackedPeriods[idx].end = duration;
+        this.updateTrackedPeriods(trackedPeriods);
     }
 
     render() {
@@ -271,6 +369,24 @@ class Settings extends React.Component {
                                    onRemovePattern={this.removePattern}
                                    onUpdatePattern={this.updatePattern} />
                                </FormControl>) || 'Please Login.'}
+                           </STableCell>
+                       </TableRow>
+                       <TableRow>
+                           <STableCell className={classes.tableHead}>
+                                Tracked Time Range
+                           </STableCell>
+                           <STableCell className={classes.tableContent}>
+                               {this.state.config.trackedPeriods &&
+                                   this.state.config.trackedPeriods.map((p, idx) =>
+                                   <FormGroup>
+                                   <TrackedPeriod
+                                       name={p.name}
+                                       fromDuration={p.start}
+                                       toDuration={p.end}
+                                       nameOnChange={this.handlePeriodNameChange(idx)}
+                                       fromOnChange={this.handlePeriodFromChange(idx)}
+                                       toOnChange={this.handlePeriodToChange(idx)}/>
+                                   </FormGroup>)}
                            </STableCell>
                        </TableRow>
                    </TableBody>
