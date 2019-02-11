@@ -1,7 +1,9 @@
 import { createMuiTheme } from '@material-ui/core/styles';
 import orange from '@material-ui/core/colors/orange';
+import deepOrange from '@material-ui/core/colors/deepOrange';
 
-const theme = createMuiTheme({
+export const defaultChartColor = deepOrange[300];
+export const theme = createMuiTheme({
     palette: {
         primary: {
             light: orange[300],
@@ -14,5 +16,3 @@ const theme = createMuiTheme({
         useNextVariants: true,
     }
 });
-
-export default theme;

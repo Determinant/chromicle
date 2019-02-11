@@ -9,12 +9,14 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
+import Popover from '@material-ui/core/Popover';
+import MaterialColorPicker from 'react-material-color-picker';
 import { CalendarField, EventField } from './RegexField';
-import theme from './theme';
+import { theme, defaultChartColor } from './theme';
 
 const styles = theme => ({
     deleteButton: {
-        width: '100%',
+        width: 0,
         position: 'absolute',
         marginRight: '2em',
         right: 0,
@@ -38,16 +40,44 @@ const styles = theme => ({
     }
 });
 
+let nameFieldstyles = {
+    colorSample: {
+        display: 'inline-block',
+        height: 30,
+        width: 30,
+        marginRight: 10,
+        cursor: 'pointer'
+    }
+};
+
+function NameField(props) {
+    let color = props.value.color.background;
+    return (
+        <span>
+            <div
+                className={props.classes.colorSample}
+                style={{backgroundColor: color ? color : defaultChartColor}}
+                onClick={props.colorOnClick}>
+            </div>
+            <TextField
+                value={props.value.name}
+                onChange={props.onChange} />
+        </span>);
+}
+
 const patternHead = [
-    {label: "Name", field: "name", elem: TextField},
-    {label: "Calendar", field: "cal", elem: withTheme(theme)(CalendarField)},
-    {label: "Event", field: 'event', elem: withTheme(theme)(EventField)}];
+    {label: "Name", elem: withStyles(nameFieldstyles)(NameField)},
+    {label: "Calendar", elem: withTheme(theme)(CalendarField)},
+    {label: "Event", elem: withTheme(theme)(EventField)}];
 
 class PatternTable extends React.Component {
     state = {
         page: 0,
         rowsPerPage: 5,
-        activePattern: null
+        activePattern: null,
+        anchorEl: null,
+        colorPickerOpen: false,
+        colorPickerDefault: defaultChartColor
     };
 
     handleChangePage = (event, page) => {
@@ -56,6 +86,14 @@ class PatternTable extends React.Component {
 
     handleChangeRowsPerPage = event => {
         this.setState({ rowsPerPage: event.target.value });
+    }
+
+    handleColorPickerClose = () => {
+        this.setState({ colorPickerOpen: false });
+        this.activeColorPattern !== null &&
+            this.chosenColor &&
+            this.props.onUpdatePattern('color', this.activeColorPattern,
+                {background: this.chosenColor.target.value})
     }
 
     render() {
@@ -83,9 +121,17 @@ class PatternTable extends React.Component {
                         return (
                             <TableCell key={i}>
                                 <CustomText
-                                    value={p[s.field]}
+                                    value={p}
                                     calendars={calendars}
-                                    onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}/>
+                                    onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}
+                                    colorOnClick={event => {
+                                        this.activeColorPattern = p.idx;
+                                        this.setState({
+                                            anchorEl: event.currentTarget,
+                                            colorPickerDefault: p.color.background,
+                                            colorPickerOpen: true
+                                        });
+                                    }}/>
                             </TableCell>)})
                 }
             </TableRow>]
@@ -94,6 +140,32 @@ class PatternTable extends React.Component {
 
         return (
             <div>
+                <Popover
+                    id="colorPicker"
+                    open={this.state.colorPickerOpen}
+                    anchorEl={this.state.anchorEl}
+                    onClose={this.handleColorPickerClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                    }}>
+                    <MaterialColorPicker
+                        initColor={this.state.colorPickerDefault}
+                        onSelect={color => {
+                            console.log("select");
+                            this.chosenColor = color;
+                        }}
+                        onSubmit={this.handleColorPickerClose}
+                        onReset={() => {}}
+                        style={{width: 400, backgroundColor: '#c7c7c7'}}
+                        submitLabel='Apply'
+                        resetLabel='Undo'
+                    />
+                </Popover>
                 <div className={classes.patternTableWrapper}>
                     <Table className={classes.patternTable}>
                         <TableHead>

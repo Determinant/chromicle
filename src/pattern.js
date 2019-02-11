@@ -22,11 +22,12 @@ export class Pattern {
 }
 
 export class PatternEntry {
-    constructor(name, idx, calPattern, eventPattern) {
+    constructor(name, idx, calPattern, eventPattern, color) {
         this.name = name;
         this.idx = idx;
         this.cal = calPattern;
         this.event = eventPattern;
+        this.color = color;
     }
 
     deflate() {
@@ -34,12 +35,14 @@ export class PatternEntry {
             name: this.name,
             idx: this.idx,
             cal: this.cal.deflate(),
-            event: this.event.deflate()
+            event: this.event.deflate(),
+            color: this.color
         };
     }
 
-    static defaultPatternEntry = (idx) => new PatternEntry('', idx, Pattern.emptyPattern(), Pattern.anyPattern());
+    static defaultPatternEntry = (idx) => new PatternEntry('', idx, Pattern.emptyPattern(), Pattern.anyPattern(), {background: null});
     static inflate = obj => new PatternEntry(
         obj.name, obj.idx,
-        Pattern.inflate(obj.cal), Pattern.inflate(obj.event));
+        Pattern.inflate(obj.cal), Pattern.inflate(obj.event),
+        obj.color);
 }

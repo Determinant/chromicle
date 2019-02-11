@@ -13,7 +13,7 @@ import Grid from '@material-ui/core/Grid';
 import { HashRouter as Router, withRouter, Route, Link, Redirect, Switch } from "react-router-dom";
 import { hashHistory } from 'react-router';
 import Logo from './Logo';
-import theme from './theme';
+import { theme } from './theme';
 import Analyze from './Analyze';
 import Settings from './Settings';
 

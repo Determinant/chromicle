@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import deepOrange from '@material-ui/core/colors/deepOrange';
 import cyan from '@material-ui/core/colors/cyan';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { defaultChartColor } from './theme';
 
 export function getChartData(start, end, patterns, calendars, calEventsGetter) {
     if (start >= end) return Promise.resolve({ patternGraphData: [], calendarGraphData: [] });
@@ -57,12 +57,15 @@ export function getChartData(start, end, patterns, calendars, calEventsGetter) {
             majorParts.push({
                 name: 'Other',
                 value: minorSum,
-                color: '#fff',
+                color: defaultChartColor,
             });
             return majorParts;
         };
         for (let i = 0; i < patterns.length; i++) {
-            patternGraphData.push({ name: patterns[i].name, value: results[i] / 60.0 });
+            patternGraphData.push({
+                name: patterns[i].name,
+                value: results[i] / 60.0,
+                color: patterns[i].color.background});
         }
         for (let id in cal_results) {
             calendarGraphData.push({
@@ -115,9 +118,11 @@ function PatternPieChart(props) {
                    cx={200}
                    cy={125}
                    outerRadius={60}
-                   fill={deepOrange[300]}
+                   fill={defaultChartColor}
                    isAnimationActive={false}
-                   label={customizedLabel}/>
+                   label={customizedLabel}>
+              {props.data.map((d, i) => <Cell key={i} fill={d.color ? d.color: defaultChartColor}/>)}
+              </Pie>
               <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
             </PieChart>
             </div>
@@ -143,7 +148,7 @@ function DoublePieChart(props) {
                fill={cyan[300]}
                isAnimationActive={false}
                label={customizedLabel}>
-            {props.calendarGraphData.map((d, i) => <Cell key={i} fill={d.color}/>)}
+            {props.calendarGraphData.map((d, i) => <Cell key={i} fill={d.color ? d.color : cyan[300]}/>)}
           </Pie>
           <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
         </PieChart>

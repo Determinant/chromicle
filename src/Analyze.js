@@ -5,6 +5,7 @@ import 'react-dates/lib/css/_datepicker.css';
 import { DateRangePicker } from 'react-dates';
 import { withStyles } from '@material-ui/core/styles';
 import cyan from '@material-ui/core/colors/cyan';
+import deepOrange from '@material-ui/core/colors/deepOrange';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -23,7 +24,7 @@ import AlertDialog from './Dialog';
 
 const default_chart_data = [
     {name: 'Work', value: 10, color: cyan[300]},
-    {name: 'Wasted', value: 10, color: cyan[300]}];
+    {name: 'Wasted', value: 10, color: deepOrange[300]}];
 
 const styles = theme => ({
     buttonSpacer: {

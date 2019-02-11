@@ -7,7 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import Logo from './Logo';
 import Typography from '@material-ui/core/Typography';
-import theme from './theme';
+import { theme } from './theme';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { PatternEntry } from './pattern';
 import { Duration } from './duration';
@@ -26,6 +26,7 @@ const styles = theme => ({
         overflow: 'auto',
     },
     buttons: {
+        width: 400,
         height: 48,
         lineHeight: '48px'
     },

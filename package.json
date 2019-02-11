@@ -40,6 +40,7 @@
     "react": "^16.8.1",
     "react-dates": "^19.0.0",
     "react-dom": "^16.8.1",
+    "react-material-color-picker": "^1.1.2",
     "react-router-dom": "^4.3.1",
     "recharts": "^1.4.2",
     "typeface-roboto": "0.0.54"

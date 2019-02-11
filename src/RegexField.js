@@ -79,7 +79,7 @@ export function CalendarField(props) {
     }
     return (
         <RegexFieldWithStyles
-            value={props.value}
+            value={props.value.cal}
             options={options}
             onChange={props.onChange}
             theme={props.theme} />);
@@ -91,7 +91,7 @@ export function EventField(props) {
     options[any.id] = any;
     return (
         <RegexFieldWithStyles
-            value={props.value}
+            value={props.value.event}
             options={options}
             onChange={props.onChange}
             theme={props.theme} />);

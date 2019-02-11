@@ -196,7 +196,7 @@ class Settings extends React.Component {
         }).then(() => this.setState({ calendars }));
     }
 
-    async loadAll(loadDefaultPatterns) {
+    async loadAll(loadPatterns = false) {
         await new Promise(resolver => (this.setState({ calendarsLoading: true }, resolver)));
 
         let colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
@@ -213,17 +213,26 @@ class Settings extends React.Component {
                     //cal: new gapi.GCalendar(item.id, item.summary)
                 }});
             this.loadCalendars(cals);
-            if (loadDefaultPatterns)
-            {
-                this.loadPatterns(items.map((item, idx) => {
-                    return new PatternEntry(item.summary, idx,
-                        new Pattern(item.id, false, item.summary, item.summary),
-                        Pattern.anyPattern());
-                }), 'main');
-            }
+            if (loadPatterns)
+                this.loadDefaultPatterns();
         });
         this.setState({ calendarsLoading: false });
     };
+
+    loadDefaultPatterns() {
+        let patterns = [];
+        let idx = 0;
+        for (let id in this.state.calendars) {
+            let cal = this.state.calendars[id];
+            if (!cal.enabled) continue;
+            patterns.push(new PatternEntry(cal.name, idx++,
+                new Pattern(id, false, cal.name, cal.name),
+                Pattern.anyPattern(),
+                cal.color));
+        }
+        console.log(patterns);
+        this.loadPatterns(patterns, 'main');
+    }
 
     loadCalendars = calendars => {
         for (let id in this.state.calendars) {
@@ -246,6 +255,7 @@ class Settings extends React.Component {
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
+        console.log(patterns[idx]);
         this.loadPatterns(patterns);
     };
 
@@ -378,6 +388,12 @@ class Settings extends React.Component {
                                    onClick={() => this.newPattern()}
                                    disabled={!this.state.isLoggedIn}><AddCircleIcon /></IconButton>
                                Tracked Events
+                               <div>
+                               <Button
+                                   variant="contained"
+                                   color="primary"
+                                   onClick={() => this.loadDefaultPatterns()}>Load Default</Button>
+                               </div>
                            </STableCell>
                            <STableCell className={classes.tableContent}>
                                {(this.state.isLoggedIn &&
