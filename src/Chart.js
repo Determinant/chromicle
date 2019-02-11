@@ -11,6 +11,7 @@ export function getChartData(start, end, patterns, calendars, calEventsGetter) {
     let event_pms = [];
     for (let id in calendars)
     {
+        if (!calendars[id].enabled) continue;
         let filtered = patterns.filter(p => p.cal.regex.test(calendars[id].name));
         if (filtered.length > 0)
             event_pms.push(calEventsGetter(id, start, end)

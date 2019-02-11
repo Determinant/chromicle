@@ -13,15 +13,19 @@ import { CalendarField, EventField } from './RegexField';
 import theme from './theme';
 
 const styles = theme => ({
-    deleteButtonShow: {
+    deleteButton: {
+        width: '100%',
         position: 'absolute',
+        marginRight: '2em',
         right: 0,
-        height: 48
+        height: 48,
     },
     deleteButtonHide: {
         display: 'none'
     },
+    deleteButtonShow: {},
     deleteIcon: {
+        position: 'absolute',
         height: '100%',
         cursor: 'pointer'
     },
@@ -58,27 +62,35 @@ class PatternTable extends React.Component {
         const { classes, calendars, patterns } = this.props;
         const { rowsPerPage, page } = this.state;
         const nDummy = rowsPerPage - Math.min(rowsPerPage, patterns.length - page * rowsPerPage);
-        let rows = patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map(p => (
-            <TableRow
-                onMouseOver={() => this.setState({ activePattern: p.idx })}
-                onMouseOut={() => this.setState({ activePattern: null })}>
+        let rows = patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((p, i) => {
+            let setActive = () => this.setState({ activePattern: p.idx });
+            let unsetActive = () => this.setState({ activePattern: null });
+            return [<TableRow key={i * 2}
+                onMouseOver={setActive} onMouseOut={unsetActive}
+                className={classes.deleteButton}>
+                <td>
+                    <span className={this.state.activePattern !== p.idx ? classes.deleteButtonHide : classes.deleteButtonShow}>
+                    <DeleteOutlinedIcon
+                        className={classes.deleteIcon}
+                        onClick={() => this.props.onRemovePattern(p.idx)} />
+                    </span>
+                </td>
+            </TableRow>,
+            <TableRow key={i * 2 + 1} onMouseOver={setActive} onMouseOut={unsetActive}>
                 {
-                    patternHead.map(s => {
+                    patternHead.map((s, i) => {
                         const CustomText = s.elem;
                         return (
-                            <TableCell>
+                            <TableCell key={i}>
                                 <CustomText
                                     value={p[s.field]}
                                     calendars={calendars}
                                     onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}/>
                             </TableCell>)})
                 }
-                <span className={this.state.activePattern === p.idx ? classes.deleteButtonShow : classes.deleteButtonHide}>
-                    <DeleteOutlinedIcon
-                        className={classes.deleteIcon}
-                        onClick={() => this.props.onRemovePattern(p.idx)} />
-                </span>
-            </TableRow>));
+            </TableRow>]
+        });
+        rows.flat();
 
         return (
             <div>

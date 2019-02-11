@@ -1,135 +1,115 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
-import { MuiThemeProvider } from '@material-ui/core/styles';
+import { withStyles, MuiThemeProvider } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import Logo from './Logo';
 import Typography from '@material-ui/core/Typography';
 import theme from './theme';
+import CssBaseline from '@material-ui/core/CssBaseline';
 import { PatternEntry } from './pattern';
 import { Duration } from './duration';
 import { msgType, MsgClient } from './msg';
-import { getChartData, StyledPatternPieChart } from './Chart';
+import { StyledPatternPieChart } from './Chart';
+import Divider from '@material-ui/core/Divider';
 import moment from 'moment';
 
 function openOptions() {
     chrome.tabs.create({ url: "index.html" });
 }
 
+const styles = theme => ({
+    content: {
+        padding: theme.spacing.unit * 1,
+        overflow: 'auto',
+    },
+    buttons: {
+        height: 48,
+        lineHeight: '48px'
+    },
+    buttonSpacer: {
+        marginBottom: theme.spacing.unit * 2,
+    },
+});
+
 class Popup extends React.Component {
     state = {
         patternGraphData: [],
+        loading: false,
     };
     constructor(props) {
         super(props);
         this.msgClient = new MsgClient('main');
-
-        let pm1 = this.msgClient.sendMsg({
-            type: msgType.getPatterns,
-            data: { id: 'main' }
-        }).then(msg => {
-            this.patterns = msg.data.map(p => PatternEntry.inflate(p));
-        });
-
-        let pm2 = this.msgClient.sendMsg({
-            type: msgType.getCalendars,
-            data: { enabledOnly: false }
-        }).then(msg => {
-            this.calendars = msg.data;
-        });
-
-        let pm3 = this.msgClient.sendMsg({
-            type: msgType.getConfig,
-            data: ['trackedPeriods']
-        }).then(msg => {
-            this.trackedPeriods = msg.data.trackedPeriods.map(p => {
-                return {
-                    start: Duration.inflate(p.start),
-                    end: Duration.inflate(p.end),
-                    name: p.name
-                };
-            });
-        });
-
-        // initial update
-        Promise.all([pm1, pm2, pm3]).then(() => {
-            for (let i = 0; i < this.trackedPeriods.length; i++)
-                this.renderChartData(i);
-        });
+        this.loading = true;
+        this.loadGraphData(false).then(() => this.setState({ loading: false }));
     }
 
-    getCalEvents = (id, start, end) => {
-        return this.msgClient.sendMsg({ type: msgType.getCalEvents, data: { id,
-            start: start.getTime(),
-            end: end.getTime() } })
-            .then(({ data }) => data.map(e => {
-                return {
-                    id: e.id,
-                    start: new Date(e.start),
-                    end: new Date(e.end) }
-            }));
-    }
-
-    renderChartData(idx) {
-        let p = this.trackedPeriods[idx];
-        console.log(this.trackedPeriods);
-        let startD = p.start.toMoment();
-        let endD = p.end.toMoment();
-        if (!(startD && endD)) return;
-        let start = moment().endOf('day');
-        if (endD.valueOf() == 0) {
-            switch (p.start.unit) {
-                case 'days': start = moment().endOf('day'); break;
-                case 'weeks': start = moment().endOf('week'); break;
-                case 'months': start = moment().endOf('month'); break;
-                default:
-            }
-        }
-        let end = start.clone();
-        start.subtract(startD);
-        end.subtract(endD);
-        console.log(start, end);
-        return getChartData(start.toDate(),
-                            end.toDate(),
-                            this.patterns, this.calendars, this.getCalEvents).then(results => {
-            let patternGraphData = this.state.patternGraphData;
-            patternGraphData[idx] = {
-                start: moment(results.start),
-                end: moment(results.end),
-                data: results.patternGraphData
-            };
-            this.setState({ patternGraphData });
+    loadGraphData(sync) {
+        return this.msgClient.sendMsg({
+            type: msgType.getGraphData,
+            data: { sync }
+        }).then(msg => {
+            this.setState({ patternGraphData: msg.data.map(d => ({
+                name: d.name,
+                data: d.data,
+                start: new Date(d.start),
+                end: new Date(d.end)
+            }))});
         });
     }
 
     render() {
-        console.log(this.state.patternGraphData);
+        let { classes } = this.props;
+        let data = this.state.patternGraphData;
         return (
             <MuiThemeProvider theme={theme}>
-            <Button variant="contained" color="primary" onClick={openOptions}>Dashboard</Button>
+            <CssBaseline />
+            <main className={classes.content}>
+            <div className={classes.buttons}>
+            <Logo style={{height: '100%', verticalAlign: 'bottom', marginRight: '1em'}}/>
+            <Button variant="contained" color="primary" onClick={openOptions}>Settings</Button>
+            <IconButton
+                disabled={this.state.loading}
+                style={{float: 'right'}}
+                onClick={() => (
+                    new Promise(resolver => (
+                        this.setState({ loading: true }, resolver)))
+                        .then(() => this.loadGraphData(true))
+                        .then(() => this.setState({ loading: false }))
+                )}><RefreshIcon />
+            </IconButton>
+            </div>
+            <div className={classes.buttonSpacer} />
             {
-                this.state.patternGraphData.map((d, idx) => (
+                data.map((d, idx) => (
                     <div key={idx}>
                     <Typography variant="subtitle1" align="center" color="textPrimary">
-                    {this.trackedPeriods[idx].name}
+                    {d.name}
                     </Typography>
                     <Typography variant="caption" align="center">
-                    {`${d.start.format('ddd, MMM Do, YYYY')} -
-                    ${d.end.format('ddd, MMM Do, YYYY')}`}
+                    {`${moment(d.start).format('ddd, MMM Do, YYYY')} -
+                    ${moment(d.end).format('ddd, MMM Do, YYYY')}`}
                     </Typography>
                     {(d.data.some(dd => dd.value > 1e-3) &&
                     <StyledPatternPieChart data={d.data} />) ||
                     <Typography variant="subtitle1" align="center" color="textSecondary">
                         No data available
                     </Typography>}
+                    {idx + 1 < data.length && <Divider />}
                     </div>
                 ))
             }
+            </main>
             </MuiThemeProvider>
         );
     }
 }
 
-ReactDOM.render(<Popup />, document.getElementById('root'));
+const StyledPopup = withStyles(styles)(Popup);
+
+ReactDOM.render(<StyledPopup />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

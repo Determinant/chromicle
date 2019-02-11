@@ -17,7 +17,8 @@
         "scopes": ["https://www.googleapis.com/auth/calendar.readonly"]
     },
     "permissions": [
-        "identity"
+        "identity",
+        "storage"
     ],
     "icons": {
         "16": "icon16.png",

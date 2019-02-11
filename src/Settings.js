@@ -78,6 +78,13 @@ class TrackedPeriod extends React.Component {
         }
     };
 
+    static toValue(value) {
+        if (isNaN(value)) return null;
+        let v = parseInt(value, 10);
+        if (v < 0 || v > 999) return null;
+        return v;
+    }
+
     render() {
         let { classes, fromDuration, toDuration, nameOnChange, fromOnChange, toOnChange, name } = this.props;
         let units = [
@@ -92,12 +99,14 @@ class TrackedPeriod extends React.Component {
                     value={name}
                     onChange={event => nameOnChange(event.target.value)}/>:
                 from <TextField
+                    error={TrackedPeriod.toValue(fromDuration.value) === null}
                     inputProps={{style: TrackedPeriod.styles.periodValue}}
                     value={fromDuration.value}
                     onChange={this.valueOnChange(fromDuration, fromOnChange)} />
                 <Select value={fromDuration.unit}
                     onChange={this.unitOnChange(fromDuration, fromOnChange)}>{units}</Select> ago
                 to <TextField
+                    error={TrackedPeriod.toValue(toDuration.value) === null}
                     inputProps={{style: TrackedPeriod.styles.periodValue}}
                     value={toDuration.value}
                     onChange={this.valueOnChange(toDuration, toOnChange)} />
@@ -118,6 +127,7 @@ class Settings extends React.Component {
         snackBarMsg: 'unknown',
         dialogOpen: false,
         dialogMsg: {title: '', message: ''},
+        calendarsLoading: false,
     };
 
     constructor(props) {
@@ -186,12 +196,14 @@ class Settings extends React.Component {
         }).then(() => this.setState({ calendars }));
     }
 
-    loadAll = loadDefaultPatterns => {
+    async loadAll(loadDefaultPatterns) {
+        await new Promise(resolver => (this.setState({ calendarsLoading: true }, resolver)));
+
         let colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
             return color.calendar;
         });
         let cals = gapi.getAuthToken().then(gapi.getCalendars);
-        Promise.all([colors, cals]).then(([colors, items]) => {
+        await Promise.all([colors, cals]).then(([colors, items]) => {
             var cals = {};
             items.forEach(item => {
                 cals[item.id] = {
@@ -210,6 +222,7 @@ class Settings extends React.Component {
                 }), 'main');
             }
         });
+        this.setState({ calendarsLoading: false });
     };
 
     loadCalendars = calendars => {
@@ -276,7 +289,11 @@ class Settings extends React.Component {
     updateTrackedPeriods = trackedPeriods => {
         this.msgClient.sendMsg({
             type: msgType.updateConfig,
-            data: { trackedPeriods: trackedPeriods.map(p => p.deflate()) }
+            data: { trackedPeriods: trackedPeriods.map(p => ({
+                name: p.name,
+                start: p.start.deflate(),
+                end: p.end.deflate()
+            })) }
         }).then(() => this.setState({...this.state.config, trackedPeriods }));
     }
 
@@ -332,7 +349,9 @@ class Settings extends React.Component {
                            <IconButton
                                style={{marginBottom: '0.12em', marginRight: '0.5em'}}
                                onClick={() => this.loadAll(false)}
-                               disabled={!this.state.isLoggedIn}><RefreshIcon /></IconButton>
+                               disabled={this.state.calendarsLoading || !this.state.isLoggedIn}>
+                               <RefreshIcon />
+                           </IconButton>
                                Calendars
                            </STableCell>
                            <STableCell className={classes.tableContent}>
@@ -378,7 +397,7 @@ class Settings extends React.Component {
                            <STableCell className={classes.tableContent}>
                                {this.state.config.trackedPeriods &&
                                    this.state.config.trackedPeriods.map((p, idx) =>
-                                   <FormGroup>
+                                   <FormGroup key={idx}>
                                    <TrackedPeriod
                                        name={p.name}
                                        fromDuration={p.start}

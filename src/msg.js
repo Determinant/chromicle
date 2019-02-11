@@ -6,6 +6,7 @@ const _getCalendars = "getCalendars";
 const _getCalEvents = "getCalEvents";
 const _updateConfig = "updateConfig";
 const _getConfig = "getConfig";
+const _getGraphData = "getGraphData";
 
 export const msgType = Object.freeze({
     updatePatterns: Symbol(_updatePatterns),
@@ -14,7 +15,8 @@ export const msgType = Object.freeze({
     getCalendars: Symbol(_getCalendars),
     getCalEvents: Symbol(_getCalEvents),
     updateConfig: Symbol(_updateConfig),
-    getConfig: Symbol(_getConfig)
+    getConfig: Symbol(_getConfig),
+    getGraphData: Symbol(_getGraphData),
 });
 
 function stringifyMsgType(mt) {
@@ -26,6 +28,7 @@ function stringifyMsgType(mt) {
         case msgType.getCalEvents: return _getCalEvents;
         case msgType.updateConfig: return _updateConfig;
         case msgType.getConfig: return _getConfig;
+        case msgType.getGraphData: return _getGraphData;
         default: console.error("unreachable");
     }
 }
@@ -39,6 +42,7 @@ function parseMsgType(s) {
         case _getCalEvents: return msgType.getCalEvents;
         case _updateConfig: return msgType.updateConfig;
         case _getConfig: return msgType.getConfig;
+        case _getGraphData: return msgType.getGraphData;
         default: console.error("unreachable");
     }
 }
