@@ -39,11 +39,11 @@ class RegexField extends React.Component {
             } else {
                 value = pitems[event.target.value];
             }
-            this.props.onChange({target: {value}});
+            this.props.onChange(value);
         };
 
-        const regexTextOnChange = event => this.props.onChange({
-            target: { value: new Pattern(0, true, event.target.value, null)}});
+        const regexTextOnChange = event => this.props.onChange(
+            new Pattern(0, true, event.target.value, null));
 
         const className = this.props.value.isRegex ? classes.fieldRegex: classes.fieldNoRegex;
         return (
@@ -81,7 +81,7 @@ export function CalendarField(props) {
         <RegexFieldWithStyles
             value={props.value.cal}
             options={options}
-            onChange={props.onChange}
+            onChange={value => props.onChange('cal', value)}
             theme={props.theme} />);
 }
 
@@ -93,6 +93,6 @@ export function EventField(props) {
         <RegexFieldWithStyles
             value={props.value.event}
             options={options}
-            onChange={props.onChange}
+            onChange={value => props.onChange('event', value)}
             theme={props.theme} />);
 }

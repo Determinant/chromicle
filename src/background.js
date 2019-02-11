@@ -16,7 +16,7 @@ let config = {
         {name: 'This Week', start: Duration.weeks(1), end: Duration.weeks(0)},
         {name: 'This Month', start: Duration.months(1), end: Duration.months(0)}]
 };
-let mainGraphData = [{}, {}, {}, {}];
+let mainGraphData = [];
 let dirtyMetadata = false;
 
 function loadMetadata() {
@@ -24,26 +24,23 @@ function loadMetadata() {
         'calendars', 'config', 'mainPatterns', 'analyzePatterns',
     ], function(items) {
         if (chrome.runtime.lastError)
-        {
             console.error("error while loading saved metadata");
-            return;
-        }
-        if (!items.hasOwnProperty('config'))
-        {
+        else if (!items.hasOwnProperty('config'))
             console.log("no saved metadata");
-            return;
+        else
+        {
+            console.log('metadata loaded');
+            config = {
+                trackedPeriods: items.config.trackedPeriods.map(p => ({
+                    name: p.name,
+                    start: Duration.inflate(p.start),
+                    end: Duration.inflate(p.end),
+                }))
+            };
+            calendars = items.calendars;
+            mainPatterns = items.mainPatterns.map(p => PatternEntry.inflate(p));
+            analyzePatterns = items.analyzePatterns.map(p => PatternEntry.inflate(p));
         }
-        console.log('metadata loaded');
-        config = {
-            trackedPeriods: items.config.trackedPeriods.map(p => ({
-                name: p.name,
-                start: Duration.inflate(p.start),
-                end: Duration.inflate(p.end),
-            }))
-        };
-        calendars = items.calendars;
-        mainPatterns = items.mainPatterns.map(p => PatternEntry.inflate(p));
-        analyzePatterns = items.analyzePatterns.map(p => PatternEntry.inflate(p));
         resolver();
     }));
 }
@@ -119,6 +116,7 @@ function updateMainGraphData() {
 }
 
 async function pollSync() {
+    console.log('poll');
     await updateMainGraphData();
     if (dirtyMetadata)
         await saveMetadata().then(() => dirtyMetadata = false);

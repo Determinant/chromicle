@@ -282,7 +282,7 @@ export class GCalendar {
                     query.start = k;
                 query.end = k;
             }
-        console.log(`start: ${start} end: ${end}`);
+        //console.log(`start: ${start} end: ${end}`);
         if (query.hasOwnProperty('start'))
         {
             console.assert(query.start <= query.end);

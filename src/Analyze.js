@@ -134,15 +134,25 @@ class Analyze extends React.Component {
         });
     }
 
+    loadDefaultPatterns() {
+        let patterns = [];
+        let idx = 0;
+        for (let id in this.state.calendars) {
+            let cal = this.state.calendars[id];
+            if (!cal.enabled) continue;
+            patterns.push(new PatternEntry(cal.name, idx++,
+                new Pattern(id, false, cal.name, cal.name),
+                Pattern.anyPattern(),
+                cal.color));
+        }
+        console.log(patterns);
+        this.loadPatterns(patterns);
+    }
+
     default = () => {
         this.handleDialogOpen("Load Default", "Load the calendars as patterns?").then(ans => {
             if (!ans) return;
-            this.loadPatterns(Object.keys(this.state.calendars).map((id, idx) => {
-                let item = this.state.calendars[id];
-                return new PatternEntry(item.name, idx,
-                    new Pattern(id, false, item.name, item.name),
-                    Pattern.anyPattern());
-            }));
+            this.loadDefaultPatterns();
         });
     }
 

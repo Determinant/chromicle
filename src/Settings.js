@@ -255,7 +255,6 @@ class Settings extends React.Component {
     updatePattern = (field, idx, value) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
-        console.log(patterns[idx]);
         this.loadPatterns(patterns);
     };
 

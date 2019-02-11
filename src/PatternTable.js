@@ -51,17 +51,17 @@ let nameFieldstyles = {
 };
 
 function NameField(props) {
-    let color = props.value.color.background;
+    let color = props.value.color;
     return (
         <span>
             <div
                 className={props.classes.colorSample}
-                style={{backgroundColor: color ? color : defaultChartColor}}
+                style={{backgroundColor: color ? color.background : defaultChartColor}}
                 onClick={props.colorOnClick}>
             </div>
             <TextField
                 value={props.value.name}
-                onChange={props.onChange} />
+                onChange={event => props.onChange('name', event.target.value)} />
         </span>);
 }
 
@@ -123,7 +123,7 @@ class PatternTable extends React.Component {
                                 <CustomText
                                     value={p}
                                     calendars={calendars}
-                                    onChange={event => this.props.onUpdatePattern(s.field, p.idx, event.target.value)}
+                                    onChange={(field, value) => this.props.onUpdatePattern(field, p.idx, value)}
                                     colorOnClick={event => {
                                         this.activeColorPattern = p.idx;
                                         this.setState({
