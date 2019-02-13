@@ -5,20 +5,29 @@ module.exports = (env, argv) => {
     const prodMode = argv.mode == 'production';
     return {
         entry: {
-            index: "./src/index.js",
-            background: "./src/background.js",
-            popup: "./src/popup.js"
+            index: "./src/index.tsx",
+            background: "./src/background.ts",
+            popup: "./src/popup.tsx"
         },
         output: {
             path: path.join(__dirname, "/dist"),
             filename: "[name].js"
         },
+        resolve: {
+            extensions: [".ts", ".tsx", ".js", ".json"]
+        },
+        devtool: "source-map",
         module: {
             rules: [
                 {
-                    test: /\.js$/,
+                    test: /\.tsx?$/,
                     exclude: /node_modules/,
-                    use: ['babel-loader', 'eslint-loader']
+                    use: ['ts-loader']
+                },
+                {
+                    test: /\.js$/,
+                    use: ["source-map-loader"],
+                    enforce: "pre"
                 },
                 {
                     test: /\.css$/,

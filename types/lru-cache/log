@@ -1,0 +1,1485 @@
+
+> chromicle@0.1.0 start /home/ymf/work/chromicle
+> webpack --mode development --watch
+
+
+webpack is watching the files…
+
+Hash: 6a08dd4d420190403f37
+Version: webpack 4.29.2
+Time: 8919ms
+Built at: 02/13/2019 12:28:26 AM
+                                       Asset       Size      Chunks             Chunk Names
+                                ./index.html  508 bytes              [emitted]  
+                             ./manifest.json   1.24 KiB              [emitted]  
+                                ./popup.html  508 bytes              [emitted]  
+                               background.js   3.63 MiB  background  [emitted]  background
+                           background.js.map   3.67 MiB  background  [emitted]  background
+ fonts/TypoPRO-FantasqueSansMono-Regular.css  568 bytes              [emitted]  
+ fonts/TypoPRO-FantasqueSansMono-Regular.eot   56.9 KiB              [emitted]  
+ fonts/TypoPRO-FantasqueSansMono-Regular.ttf   56.5 KiB              [emitted]  
+fonts/TypoPRO-FantasqueSansMono-Regular.woff   28.4 KiB              [emitted]  
+                                 icon128.png   4.06 KiB              [emitted]  
+                                  icon16.png  561 bytes              [emitted]  
+                                  icon48.png   1.64 KiB              [emitted]  
+                                    index.js   6.04 MiB       index  [emitted]  index
+                                index.js.map    6.1 MiB       index  [emitted]  index
+                                    popup.js   3.71 MiB       popup  [emitted]  popup
+                                popup.js.map   3.74 MiB       popup  [emitted]  popup
+Entrypoint index = index.js index.js.map
+Entrypoint background = background.js background.js.map
+Entrypoint popup = popup.js popup.js.map
+[./node_modules/moment/locale sync recursive ^\.\/.*$] ./node_modules/moment/locale sync ^\.\/.*$ 3 KiB {index} {background} {popup} [optional] [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {index} {background} {popup} [built]
+[./src/Analyze.tsx] 11.7 KiB {index} [built] [27 errors]
+[./src/Chart.tsx] 6.41 KiB {index} {background} {popup} [built] [34 errors]
+[./src/Dashboard.tsx] 5.14 KiB {index} [built] [13 errors]
+[./src/Logo.tsx] 1.34 KiB {index} {popup} [built] [1 error]
+[./src/Settings.tsx] 22.2 KiB {index} [built] [81 errors]
+[./src/background.ts] 11.2 KiB {background} [built] [47 errors]
+[./src/duration.ts] 1010 bytes {index} {background} [built]
+[./src/gapi.ts] 19.3 KiB {index} {background} [built] [4 errors]
+[./src/index.tsx] 310 bytes {index} [built] [1 error]
+[./src/msg.ts] 2.67 KiB {index} {background} {popup} [built]
+[./src/pattern.ts] 2.07 KiB {index} {background} [built]
+[./src/popup.tsx] 5.12 KiB {popup} [built] [12 errors]
+[./src/theme.tsx] 619 bytes {index} {background} {popup} [built]
+    + 1404 hidden modules
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(59,13)
+      TS2345: Argument of type '{ type: MsgType; data: { id: string; }; }' is not assignable to parameter of type '{ mt: MsgType; data: any; }'.
+  Object literal may only specify known properties, and 'type' does not exist in type '{ mt: MsgType; data: any; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(61,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(62,52)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(66,13)
+      TS2345: Argument of type '{ type: MsgType; data: { enabledOnly: boolean; }; }' is not assignable to parameter of type '{ mt: MsgType; data: any; }'.
+  Object literal may only specify known properties, and 'type' does not exist in type '{ mt: MsgType; data: any; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(68,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(75,14)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Analyze'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(80,13)
+      TS2345: Argument of type '{ type: MsgType; data: { id: string; patterns: { name: string; idx: number; cal: { id: ReactText; isRegex: boolean; value: string; label: string; }; event: { id: ReactText; isRegex: boolean; value: string; label: string; }; color: PatternEntryColor; }[]; }; }' is not assignable to parameter of type '{ mt: MsgType; data: any; }'.
+  Object literal may only specify known properties, and 'type' does not exist in type '{ mt: MsgType; data: any; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(87,9)
+      TS7017: Element implicitly has an 'any' type because type 'PatternEntry' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(107,41)
+      TS2345: Argument of type '{ type: MsgType; data: { id: string; start: number; end: number; }; }' is not assignable to parameter of type '{ mt: MsgType; data: any; }'.
+  Object literal may only specify known properties, and 'type' does not exist in type '{ mt: MsgType; data: any; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(110,22)
+      TS7031: Binding element 'data' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(110,42)
+      TS7006: Parameter 'e' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(145,23)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(163,28)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(163,35)
+      TS7006: Parameter 'reason' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(168,27)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(168,32)
+      TS7006: Parameter 'variant' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(172,25)
+      TS7006: Parameter 'title' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(172,32)
+      TS7006: Parameter 'message' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(174,18)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Analyze'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(180,25)
+      TS7006: Parameter 'result' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(181,14)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Analyze'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(186,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(225,55)
+      TS7031: Binding element 'startDate' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(225,66)
+      TS7031: Binding element 'endDate' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(228,62)
+      TS2339: Property 'focusedInput' does not exist on type '{ patterns: PatternEntry[]; calendars: {}; startDate: Moment; endDate: Moment; patternGraphData: { name: string; value: number; color: string; }[]; calendarGraphData: { name: string; value: number; color: string; }[]; ... 4 more ...; dialogMsg: { ...; }; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(229,52)
+      TS7006: Parameter 'focusedInput' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Analyze.tsx
+./src/Analyze.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Analyze.tsx(266,9)
+      TS2339: Property 'propTypes' does not exist on type 'typeof Analyze'.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(6,46)
+      TS7016: Could not find a declaration file for module 'recharts'. '/home/ymf/work/chromicle/node_modules/recharts/lib/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(9,30)
+      TS7006: Parameter 'start' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(9,37)
+      TS7006: Parameter 'end' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(9,42)
+      TS7006: Parameter 'patterns' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(9,52)
+      TS7006: Parameter 'calendars' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(9,63)
+      TS7006: Parameter 'calEventsGetter' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(15,40)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(18,23)
+      TS7006: Parameter 'r' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(26,13)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(27,13)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(30,13)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(32,18)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(33,13)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(33,32)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(34,17)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(34,43)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(37,25)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(40,21)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(41,21)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(47,32)
+      TS7006: Parameter 'data' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(51,26)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(52,26)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(67,24)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(73,25)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(82,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(88,26)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(111,26)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(124,32)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(124,35)
+      TS7006: Parameter 'i' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(126,36)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(135,25)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(151,43)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(151,46)
+      TS7006: Parameter 'i' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Chart.tsx
+./src/Chart.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Chart.tsx(153,32)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(13,81)
+      TS7016: Could not find a declaration file for module 'react-router-dom'. '/home/ymf/work/chromicle/node_modules/react-router-dom/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(14,29)
+      TS7016: Could not find a declaration file for module 'react-router'. '/home/ymf/work/chromicle/node_modules/react-router/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(20,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(48,24)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(48,31)
+      TS7006: Parameter 'currentTab' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(49,20)
+      TS2339: Property 'history' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(52,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(62,26)
+      TS2322: Type '{ children: Element[]; styles: { display: string; }; classes: { indicator: any; }; value: any; onChange: (event: any, currentTab: any) => void; }' is not assignable to type 'IntrinsicAttributes & TabsProps & { children?: ReactNode; }'.
+  Property 'styles' does not exist on type 'IntrinsicAttributes & TabsProps & { children?: ReactNode; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(64,47)
+      TS2339: Property 'history' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(66,30)
+      TS2322: Type '{ label: string; component: any; to: string; value: string; }' is not assignable to type 'IntrinsicAttributes & TabProps & { children?: ReactNode; }'.
+  Property 'to' does not exist on type 'IntrinsicAttributes & TabProps & { children?: ReactNode; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(67,30)
+      TS2322: Type '{ label: string; component: any; to: string; value: string; }' is not assignable to type 'IntrinsicAttributes & TabProps & { children?: ReactNode; }'.
+  Property 'to' does not exist on type 'IntrinsicAttributes & TabProps & { children?: ReactNode; }'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(83,15)
+      TS2339: Property 'propTypes' does not exist on type 'typeof DashboardTabs'.
+
+ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx
+./src/Dashboard.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dashboard.tsx(89,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Dialog.tsx
+./src/Dialog.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dialog.tsx(12,21)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Dialog.tsx
+./src/Dialog.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Dialog.tsx(16,22)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Logo.tsx
+./src/Logo.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Logo.tsx(2,17)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(13,33)
+      TS7016: Could not find a declaration file for module 'react-material-color-picker'. '/home/ymf/work/chromicle/node_modules/react-material-color-picker/dist/MaterialColorPicker.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(17,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(53,20)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(70,31)
+      TS2554: Expected 0 arguments, but got 1.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(71,28)
+      TS2554: Expected 0 arguments, but got 1.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(77,9)
+      TS7018: Object literal's property 'activePattern' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(78,9)
+      TS7018: Object literal's property 'anchorEl' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(83,25)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(83,32)
+      TS7006: Parameter 'page' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(87,31)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(93,14)
+      TS2339: Property 'activeColorPattern' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(94,18)
+      TS2339: Property 'chosenColor' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(95,24)
+      TS2339: Property 'onUpdatePattern' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(95,54)
+      TS2339: Property 'activeColorPattern' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(96,35)
+      TS2339: Property 'chosenColor' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(100,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(100,26)
+      TS2339: Property 'calendars' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(100,37)
+      TS2339: Property 'patterns' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(103,86)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(103,89)
+      TS7006: Parameter 'i' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(113,51)
+      TS2339: Property 'onRemovePattern' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(126,48)
+      TS7006: Parameter 'field' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(126,55)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(126,76)
+      TS2339: Property 'onUpdatePattern' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(127,51)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(128,46)
+      TS2339: Property 'activeColorPattern' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(158,35)
+      TS7006: Parameter 'color' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(160,34)
+      TS2339: Property 'chosenColor' does not exist on type 'PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(200,14)
+      TS2339: Property 'propTypes' does not exist on type 'typeof PatternTable'.
+
+ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx
+./src/PatternTable.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/PatternTable.tsx(208,27)
+      TS2345: Argument of type '(theme: any) => { deleteButton: { width: number; position: string; marginRight: string; right: number; height: number; }; deleteButtonHide: { display: string; }; deleteButtonShow: {}; deleteIcon: { position: string; height: string; cursor: string; }; patternTableWrapper: { ...; }; patternTable: { ...; }; }' is not assignable to parameter of type 'StyleRulesCallback<"deleteButton" | "deleteButtonHide" | "deleteButtonShow" | "deleteIcon" | "patternTableWrapper" | "patternTable"> | Record<"deleteButton" | "deleteButtonHide" | "deleteButtonShow" | "deleteIcon" | "patternTableWrapper" | "patternTable", CSSProperties>'.
+  Type '(theme: any) => { deleteButton: { width: number; position: string; marginRight: string; right: number; height: number; }; deleteButtonHide: { display: string; }; deleteButtonShow: {}; deleteIcon: { position: string; height: string; cursor: string; }; patternTableWrapper: { ...; }; patternTable: { ...; }; }' is not assignable to type 'StyleRulesCallback<"deleteButton" | "deleteButtonHide" | "deleteButtonShow" | "deleteIcon" | "patternTableWrapper" | "patternTable">'.
+    Type '{ deleteButton: { width: number; position: string; marginRight: string; right: number; height: number; }; deleteButtonHide: { display: string; }; deleteButtonShow: {}; deleteIcon: { position: string; height: string; cursor: string; }; patternTableWrapper: { ...; }; patternTable: { ...; }; }' is not assignable to type 'Record<"deleteButton" | "deleteButtonHide" | "deleteButtonShow" | "deleteIcon" | "patternTableWrapper" | "patternTable", CSSProperties>'.
+      Types of property 'deleteButton' are incompatible.
+        Type '{ width: number; position: string; marginRight: string; right: number; height: number; }' is not assignable to type 'CSSProperties'.
+          Types of property 'position' are incompatible.
+            Type 'string' is not assignable to type 'PositionProperty'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(10,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(21,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(23,33)
+      TS2339: Property 'options' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(24,20)
+      TS7009: 'new' expression, whose target lacks a construct signature, implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(29,49)
+      TS2339: Property 'theme' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(32,31)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(36,32)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(37,32)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(38,36)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(42,24)
+      TS2339: Property 'onChange' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(45,35)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(45,55)
+      TS2339: Property 'onChange' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(48,38)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(53,43)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(57,33)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(59,47)
+      TS2339: Property 'value' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(67,12)
+      TS2339: Property 'propTypes' does not exist on type 'typeof RegexField'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(73,31)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(76,9)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(81,10)
+      TS2322: Type '{ value: any; options: {}; onChange: (value: any) => any; theme: any; }' is not assignable to type 'IntrinsicAttributes & Pick<{}, never> & StyledComponentProps<"fieldNoRegex" | "fieldRegex"> & { children?: ReactNode; }'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & Pick<{}, never> & StyledComponentProps<"fieldNoRegex" | "fieldRegex"> & { children?: ReactNode; }'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(84,23)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(88,28)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(91,5)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(93,10)
+      TS2322: Type '{ value: any; options: {}; onChange: (value: any) => any; theme: any; }' is not assignable to type 'IntrinsicAttributes & Pick<{}, never> & StyledComponentProps<"fieldNoRegex" | "fieldRegex"> & { children?: ReactNode; }'.
+  Property 'value' does not exist on type 'IntrinsicAttributes & Pick<{}, never> & StyledComponentProps<"fieldNoRegex" | "fieldRegex"> & { children?: ReactNode; }'.
+
+ERROR in /home/ymf/work/chromicle/src/RegexField.tsx
+./src/RegexField.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/RegexField.tsx(96,23)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(33,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(63,22)
+      TS7006: Parameter 'old' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(63,27)
+      TS7006: Parameter 'onChange' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(63,40)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(67,21)
+      TS7006: Parameter 'old' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(67,26)
+      TS7006: Parameter 'onChange' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(67,39)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(81,20)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,15)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,24)
+      TS2339: Property 'fromDuration' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,38)
+      TS2339: Property 'toDuration' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,50)
+      TS2339: Property 'nameOnChange' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,64)
+      TS2339: Property 'fromOnChange' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,78)
+      TS2339: Property 'toOnChange' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(89,90)
+      TS2339: Property 'name' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(98,35)
+      TS2322: Type '{ textAlign: string; }' is not assignable to type 'CSSProperties'.
+  Types of property 'textAlign' are incompatible.
+    Type 'string' is not assignable to type 'TextAlignProperty'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(103,34)
+      TS2322: Type '{ width: number; textAlign: string; }' is not assignable to type 'CSSProperties'.
+  Types of property 'textAlign' are incompatible.
+    Type 'string' is not assignable to type 'TextAlignProperty'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(110,34)
+      TS2322: Type '{ width: number; textAlign: string; }' is not assignable to type 'CSSProperties'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(123,9)
+      TS7018: Object literal's property 'patterns' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(133,17)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(137,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(139,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(142,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(143,52)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(146,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(149,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(153,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(156,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(158,61)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(170,14)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(190,28)
+      TS7006: Parameter 'id' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(192,9)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(192,34)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(193,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(208,27)
+      TS7006: Parameter 'item' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(209,17)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(226,23)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(237,21)
+      TS7006: Parameter 'calendars' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(240,41)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(242,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(248,21)
+      TS7006: Parameter 'patterns' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(248,31)
+      TS7006: Parameter 'id' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(249,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(251,48)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(255,22)
+      TS7006: Parameter 'field' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(255,29)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(255,34)
+      TS7006: Parameter 'value' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(258,9)
+      TS2554: Expected 2 arguments, but got 1.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(261,21)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(266,9)
+      TS2554: Expected 2 arguments, but got 1.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(273,9)
+      TS2554: Expected 2 arguments, but got 1.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(276,28)
+      TS7006: Parameter 'event' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(276,35)
+      TS7006: Parameter 'reason' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(281,26)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(285,25)
+      TS7006: Parameter 'title' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(285,32)
+      TS7006: Parameter 'message' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(287,18)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(293,25)
+      TS7006: Parameter 'result' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(294,14)
+      TS2339: Property 'dialogPromiseResolver' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(298,28)
+      TS7006: Parameter 'trackedPeriods' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(299,14)
+      TS2339: Property 'msgClient' does not exist on type 'Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(301,56)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(309,30)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(309,37)
+      TS7006: Parameter 'name' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(310,52)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(315,30)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(315,37)
+      TS7006: Parameter 'duration' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(316,52)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(321,28)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(321,35)
+      TS7006: Parameter 'duration' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(322,52)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(328,17)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(376,53)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(378,63)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(413,51)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(414,54)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(414,74)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(414,77)
+      TS7006: Parameter 'idx' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(416,37)
+      TS2322: Type '{ name: any; fromDuration: any; toDuration: any; nameOnChange: (name: any) => void; fromOnChange: (duration: any) => void; toOnChange: (duration: any) => void; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<TrackedPeriod> & Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+  Property 'name' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<TrackedPeriod> & Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(433,10)
+      TS2339: Property 'propTypes' does not exist on type 'typeof Settings'.
+
+ERROR in /home/ymf/work/chromicle/src/Settings.tsx
+./src/Settings.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Settings.tsx(437,27)
+      TS2345: Argument of type '(theme: any) => { tableHead: { verticalAlign: string; textAlign: string; lineHeight: string; }; tableContent: { textAlign: string; maxWidth: number; }; calendarList: { maxHeight: number; overflowY: string; }; }' is not assignable to parameter of type 'StyleRulesCallback<"tableHead" | "tableContent" | "calendarList"> | Record<"tableHead" | "tableContent" | "calendarList", CSSProperties>'.
+  Type '(theme: any) => { tableHead: { verticalAlign: string; textAlign: string; lineHeight: string; }; tableContent: { textAlign: string; maxWidth: number; }; calendarList: { maxHeight: number; overflowY: string; }; }' is not assignable to type 'StyleRulesCallback<"tableHead" | "tableContent" | "calendarList">'.
+    Type '{ tableHead: { verticalAlign: string; textAlign: string; lineHeight: string; }; tableContent: { textAlign: string; maxWidth: number; }; calendarList: { maxHeight: number; overflowY: string; }; }' is not assignable to type 'Record<"tableHead" | "tableContent" | "calendarList", CSSProperties>'.
+      Types of property 'tableHead' are incompatible.
+        Type '{ verticalAlign: string; textAlign: string; lineHeight: string; }' is not assignable to type 'CSSProperties'.
+          Types of property 'textAlign' are incompatible.
+            Type 'string' is not assignable to type 'TextAlignProperty'.
+
+ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx
+./src/Snackbar.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx(3,24)
+      TS7016: Could not find a declaration file for module 'classnames'. '/home/ymf/work/chromicle/node_modules/classnames/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx
+./src/Snackbar.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx(20,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx
+./src/Snackbar.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx(40,25)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx
+./src/Snackbar.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/Snackbar.tsx(42,18)
+      TS7017: Element implicitly has an 'any' type because type '{ error: ComponentType<SvgIconProps>; warning: ComponentType<SvgIconProps>; }' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(2,10)
+      TS2724: Module '"./msg"' has no exported member 'msgType'. Did you mean 'MsgType'?
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(9,5)
+      TS7034: Variable 'analyzePatterns' implicitly has type 'any[]' in some locations where its type cannot be determined.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(19,5)
+      TS7034: Variable 'mainGraphData' implicitly has type 'any[]' in some locations where its type cannot be determined.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(34,65)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(41,51)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(42,57)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(58,47)
+      TS2339: Property 'deflate' does not exist on type 'number'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(59,26)
+      TS7005: Variable 'analyzePatterns' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(66,23)
+      TS7006: Parameter 'id' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(66,27)
+      TS7006: Parameter 'start' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(66,34)
+      TS7006: Parameter 'end' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(68,9)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(68,46)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(69,12)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(70,16)
+      TS7006: Parameter 'e' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(70,16)
+      TS7011: Function expression, which lacks return-type annotation, implicitly has an 'any[]' return type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(72,13)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(79,17)
+      TS7005: Variable 'mainGraphData' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(104,14)
+      TS7006: Parameter 'id' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(104,18)
+      TS7006: Parameter 'start' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(104,24)
+      TS7006: Parameter 'end' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(104,66)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(104,77)
+      TS7006: Parameter 'e' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(135,21)
+      TS2339: Property 'type' does not exist on type 'Msg<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(137,37)
+      TS2339: Property 'patterns' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(137,50)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(138,26)
+      TS2339: Property 'id' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(148,26)
+      TS2339: Property 'id' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(149,28)
+      TS7005: Variable 'analyzePatterns' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(163,26)
+      TS2339: Property 'enabledOnly' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(166,35)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(167,43)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(167,53)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(173,35)
+      TS2339: Property 'id' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(173,48)
+      TS2339: Property 'start' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(173,64)
+      TS2339: Property 'end' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(173,74)
+      TS7006: Parameter 'data' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(175,49)
+      TS7006: Parameter 'e' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(188,46)
+      TS2339: Property 'trackedPeriods' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(188,65)
+      TS7006: Parameter 'p' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(199,22)
+      TS2339: Property 'forEach' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(199,30)
+      TS7006: Parameter 'prop' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(199,38)
+      TS7017: Element implicitly has an 'any' type because type '{}' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(199,50)
+      TS7017: Element implicitly has an 'any' type because type '{ trackedPeriods: { name: string; start: Duration; end: Duration; }[]; }' has no index signature.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(204,13)
+      TS2349: Cannot invoke an expression whose type lacks a call signature. Type '(<TResult1 = void, TResult2 = never>(onfulfilled?: (value: void) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>) => Promise<TResult1 | TResult2>) | (<TResult1 = void[], TResult2 = never>(onfulfilled?: (value: void[]) => TResult1 | PromiseLike<...>, onrejected?: (r...' has no compatible call signatures.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(204,23)
+      TS2339: Property 'sync' does not exist on type '{}'.
+
+ERROR in /home/ymf/work/chromicle/src/background.ts
+./src/background.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/background.ts(205,46)
+      TS7005: Variable 'mainGraphData' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/gapi.ts
+./src/gapi.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/gapi.ts(146,12)
+      TS2709: Cannot use namespace 'LRU' as a type.
+
+ERROR in /home/ymf/work/chromicle/src/gapi.ts
+./src/gapi.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/gapi.ts(156,22)
+      TS2351: Cannot use 'new' with an expression whose type lacks a call or construct signature.
+
+ERROR in /home/ymf/work/chromicle/src/gapi.ts
+./src/gapi.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/gapi.ts(158,23)
+      TS7006: Parameter 'k' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/gapi.ts
+./src/gapi.ts
+[tsl] ERROR in /home/ymf/work/chromicle/src/gapi.ts(158,26)
+      TS7006: Parameter 'v' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/index.tsx
+./src/index.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/index.tsx(2,22)
+      TS7016: Could not find a declaration file for module 'react-dom'. '/home/ymf/work/chromicle/node_modules/react-dom/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(2,22)
+      TS7016: Could not find a declaration file for module 'react-dom'. '/home/ymf/work/chromicle/node_modules/react-dom/index.js' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(22,16)
+      TS7006: Parameter 'theme' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(39,9)
+      TS7018: Object literal's property 'patternGraphData' implicitly has an 'any[]' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(42,17)
+      TS7006: Parameter 'props' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(44,14)
+      TS2339: Property 'msgClient' does not exist on type 'Popup'.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(45,14)
+      TS2339: Property 'loading' does not exist on type 'Popup'.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(49,19)
+      TS7006: Parameter 'sync' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(50,21)
+      TS2339: Property 'msgClient' does not exist on type 'Popup'.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(53,17)
+      TS7006: Parameter 'msg' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(54,60)
+      TS7006: Parameter 'd' implicitly has an 'any' type.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(64,15)
+      TS2339: Property 'classes' does not exist on type 'Readonly<{ children?: ReactNode; }> & Readonly<{}>'.
+
+ERROR in /home/ymf/work/chromicle/src/popup.tsx
+./src/popup.tsx
+[tsl] ERROR in /home/ymf/work/chromicle/src/popup.tsx(95,35)
+      TS7006: Parameter 'dd' implicitly has an 'any' type.
+Child HtmlWebpackCompiler:
+     1 asset
+    Entrypoint HtmlWebpackPlugin_0 = __child-HtmlWebpackPlugin_0
+    [./node_modules/html-webpack-plugin/lib/loader.js!./src/index.html] 687 bytes {HtmlWebpackPlugin_0} [built]
+    [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {HtmlWebpackPlugin_0} [built]
+    [./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {HtmlWebpackPlugin_0} [built]
+        + 1 hidden module

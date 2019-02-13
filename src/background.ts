@@ -5,7 +5,7 @@ import moment from 'moment';
 import { getChartData } from './Chart';
 import { PatternEntry } from './pattern';
 
-let mainPatterns = [];
+let mainPatterns: number[] = [];
 let analyzePatterns = [];
 let calendars = {};
 let calData = {};

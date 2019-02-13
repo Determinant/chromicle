@@ -1,5 +1,17 @@
+interface PatternFlat {
+    id: number | string;
+    isRegex: boolean;
+    value: string;
+    label: string;
+}
+
 export class Pattern {
-    constructor(id, isRegex, value, label) {
+    id: number | string;
+    isRegex: boolean;
+    value: string;
+    label: string;
+
+    constructor(id: number | string, isRegex: boolean, value: string, label: string) {
         this.id = id;
         this.isRegex = isRegex;
         this.value = value;
@@ -18,11 +30,31 @@ export class Pattern {
     }
     static emptyPattern = () => new Pattern(0, true, '', null);
     static anyPattern = () => new Pattern('any', true, '.*', 'Any');
-    static inflate = obj => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
+    static inflate = (obj: PatternFlat) => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
+}
+
+interface PatternEntryColor {
+    background: string
+}
+
+interface PatternEntryFlat {
+    name: string;
+    idx: number;
+    cal: PatternFlat;
+    event: PatternFlat;
+    color: PatternEntryColor;
 }
 
 export class PatternEntry {
-    constructor(name, idx, calPattern, eventPattern, color) {
+    name: string;
+    idx: number;
+    cal: Pattern;
+    event: Pattern; 
+    color: PatternEntryColor;
+
+    constructor(name: string, idx: number,
+                calPattern: Pattern, eventPattern: Pattern,
+                color: PatternEntryColor) {
         this.name = name;
         this.idx = idx;
         this.cal = calPattern;
@@ -40,8 +72,12 @@ export class PatternEntry {
         };
     }
 
-    static defaultPatternEntry = (idx) => new PatternEntry('', idx, Pattern.emptyPattern(), Pattern.anyPattern(), {background: null});
-    static inflate = obj => new PatternEntry(
+    static defaultPatternEntry = (idx: number) => (
+        new PatternEntry('', idx,
+            Pattern.emptyPattern(),
+            Pattern.anyPattern(), {background: null}));
+
+    static inflate = (obj: PatternEntryFlat) => new PatternEntry(
         obj.name, obj.idx,
         Pattern.inflate(obj.cal), Pattern.inflate(obj.event),
         obj.color);

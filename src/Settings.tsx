@@ -20,7 +20,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import * as gapi from './gapi';
-import { msgType, MsgClient } from './msg';
+import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
@@ -137,21 +137,21 @@ class Settings extends React.Component {
         this.msgClient = new MsgClient('main');
 
         this.msgClient.sendMsg({
-            type: msgType.getPatterns,
+            type: MsgType.getPatterns,
             data: { id: 'main' }
         }).then(msg => {
             this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
         });
 
         this.msgClient.sendMsg({
-            type: msgType.getCalendars,
+            type: MsgType.getCalendars,
             data: { enabledOnly: false }
         }).then(msg => {
             this.setState({ calendars: msg.data });
         });
 
         this.msgClient.sendMsg({
-            type: msgType.getConfig,
+            type: MsgType.getConfig,
             data: ['trackedPeriods']
         }).then(msg => {
             let config = {
@@ -191,7 +191,7 @@ class Settings extends React.Component {
         var calendars = {...this.state.calendars};
         calendars[id].enabled = !calendars[id].enabled;
         this.msgClient.sendMsg({
-            type: msgType.updateCalendars,
+            type: MsgType.updateCalendars,
             data: calendars
         }).then(() => this.setState({ calendars }));
     }
@@ -240,14 +240,14 @@ class Settings extends React.Component {
                 calendars[id].enabled = this.state.calendars[id].enabled;
         }
         this.msgClient.sendMsg({
-            type: msgType.updateCalendars,
+            type: MsgType.updateCalendars,
             data: calendars
         }).then(() => this.setState({ calendars }));
     };
 
     loadPatterns = (patterns, id) => {
         this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
+            type: MsgType.updatePatterns,
             data: { id, patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
@@ -297,7 +297,7 @@ class Settings extends React.Component {
 
     updateTrackedPeriods = trackedPeriods => {
         this.msgClient.sendMsg({
-            type: msgType.updateConfig,
+            type: MsgType.updateConfig,
             data: { trackedPeriods: trackedPeriods.map(p => ({
                 name: p.name,
                 start: p.start.deflate(),

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
 import { DateRangePicker } from 'react-dates';
-import { withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles } from '@material-ui/core/styles';
 import cyan from '@material-ui/core/colors/cyan';
 import deepOrange from '@material-ui/core/colors/deepOrange';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -15,51 +15,55 @@ import Grid from '@material-ui/core/Grid';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 import * as gapi from './gapi';
-import { msgType, MsgClient } from './msg';
+import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry } from './pattern';
 import { AnalyzePieChart, getChartData } from './Chart';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
+import moment from 'moment';
 
 const default_chart_data = [
     {name: 'Work', value: 10, color: cyan[300]},
     {name: 'Wasted', value: 10, color: deepOrange[300]}];
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     buttonSpacer: {
         marginBottom: theme.spacing.unit * 4,
     },
 });
 
 class Analyze extends React.Component {
+    msgClient: MsgClient;
+
     state = {
-        patterns: [],
+        patterns: [] as PatternEntry[],
         calendars: {},
-        startDate: null,
-        endDate: null,
+        startDate: null as moment.Moment,
+        endDate: null as moment.Moment,
         patternGraphData: default_chart_data,
         calendarGraphData: default_chart_data,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
         snackBarVariant: 'error',
         dialogOpen: false,
-        dialogMsg: {title: '', message: ''},
+        dialogMsg: {title: '', message: ''}
     };
 
-    constructor(props) {
+    constructor(props: any) {
         super(props);
+
         this.msgClient = new MsgClient('main');
 
         this.msgClient.sendMsg({
-            type: msgType.getPatterns,
+            type: MsgType.getPatterns,
             data: { id: 'analyze' }
         }).then(msg => {
             this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
         });
 
         this.msgClient.sendMsg({
-            type: msgType.getCalendars,
+            type: MsgType.getCalendars,
             data: { enabledOnly: true }
         }).then(msg => {
             this.setState({ calendars: msg.data });
@@ -71,20 +75,20 @@ class Analyze extends React.Component {
         this.dialogPromiseResolver = null;
     }
 
-    loadPatterns = patterns => {
+    loadPatterns = (patterns: PatternEntry[]) => {
         this.msgClient.sendMsg({
-            type: msgType.updatePatterns,
+            type: MsgType.updatePatterns,
             data: { id: 'analyze', patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
 
-    updatePattern = (field, idx, value) => {
+    updatePattern = (field: string, idx: number, value: PatternEntry[]) => {
         let patterns = this.state.patterns;
         patterns[idx][field] = value;
         this.loadPatterns(patterns);
     };
 
-    removePattern = idx => {
+    removePattern = (idx: number) => {
         let patterns = this.state.patterns;
         patterns.splice(idx, 1);
         for (let i = 0; i < patterns.length; i++)
@@ -99,8 +103,8 @@ class Analyze extends React.Component {
         this.loadPatterns(patterns);
     };
 
-    getCalEvents = (id, start, end) => {
-        return this.msgClient.sendMsg({ type: msgType.getCalEvents, data: { id,
+    getCalEvents = (id: string, start: Date, end: Date) => {
+        return this.msgClient.sendMsg({ type: MsgType.getCalEvents, data: { id,
             start: start.getTime(),
             end: end.getTime() } })
             .then(({ data }) => data.map(e => {

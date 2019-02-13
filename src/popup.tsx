@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as serviceWorker from './serviceWorker';
 import { withStyles, MuiThemeProvider } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -11,7 +10,7 @@ import { theme } from './theme';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { PatternEntry } from './pattern';
 import { Duration } from './duration';
-import { msgType, MsgClient } from './msg';
+import { MsgType, MsgClient } from './msg';
 import { StyledPatternPieChart } from './Chart';
 import Divider from '@material-ui/core/Divider';
 import moment from 'moment';
@@ -49,7 +48,7 @@ class Popup extends React.Component {
 
     loadGraphData(sync) {
         return this.msgClient.sendMsg({
-            type: msgType.getGraphData,
+            type: MsgType.getGraphData,
             data: { sync }
         }).then(msg => {
             this.setState({ patternGraphData: msg.data.map(d => ({
@@ -111,8 +110,3 @@ class Popup extends React.Component {
 const StyledPopup = withStyles(styles)(Popup);
 
 ReactDOM.render(<StyledPopup />, document.getElementById('root'));
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
