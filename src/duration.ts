@@ -3,14 +3,14 @@ import moment from 'moment';
 export type TimeUnit = moment.unitOfTime.DurationConstructor;
 
 export type DurationFlat = {
-    value: number,
+    value: string,
     unit: string
 };
 
 export class Duration {
-    value: number;
+    value: string;
     unit: TimeUnit;
-    constructor(value: number, unit: TimeUnit) {
+    constructor(value: string, unit: TimeUnit) {
         this.value = value
         this.unit = unit
     }
@@ -22,9 +22,9 @@ export class Duration {
         return null;
     }
 
-    static days(n: number) { return new Duration(n, 'days'); }
-    static weeks(n: number) { return new Duration(n, 'weeks'); }
-    static months(n: number) { return new Duration(n, 'months'); }
+    static days(n: number) { return new Duration(String(n), 'days'); }
+    static weeks(n: number) { return new Duration(String(n), 'weeks'); }
+    static months(n: number) { return new Duration(String(n), 'months'); }
 
     deflate() { return { value: this.value, unit: this.unit }; }
     static inflate = (obj: DurationFlat) => new Duration(obj.value, obj.unit as TimeUnit);

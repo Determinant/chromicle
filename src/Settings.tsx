@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -30,7 +30,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { Duration } from './duration';
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     tableHead: {
         verticalAlign: 'top',
         textAlign: 'right',
@@ -59,12 +59,19 @@ const CompactListItem = withStyles(theme => ({
     },
 }))(ListItem);
 
-class TrackedPeriod extends React.Component {
-    valueOnChange = (old, onChange) => event => {
+class TrackedPeriod extends React.Component<{
+            name: string
+            fromDuration: Duration,
+            toDuration: Duration,
+            nameOnChange: (name: string) => void,
+            fromOnChange: (d: Duration) => void,
+            toOnChange: (d: Duration) => void
+        }>{
+    valueOnChange = (old: Duration, onChange: (d: Duration) => void) => (event: any) => {
         onChange(new Duration(event.target.value, old.unit));
     }
 
-    unitOnChange = (old, onChange) => event => {
+    unitOnChange = (old: Duration, onChange: (d: Duration) => void) => (event: any) => {
         onChange(new Duration(old.value, event.target.value));
     }
 
@@ -78,7 +85,7 @@ class TrackedPeriod extends React.Component {
         }
     };
 
-    static toValue(value) {
+    static toValue(value: any) {
         if (isNaN(value)) return null;
         let v = parseInt(value, 10);
         if (v < 0 || v > 999) return null;
@@ -86,7 +93,7 @@ class TrackedPeriod extends React.Component {
     }
 
     render() {
-        let { classes, fromDuration, toDuration, nameOnChange, fromOnChange, toOnChange, name } = this.props;
+        let { fromDuration, toDuration, nameOnChange, fromOnChange, toOnChange, name } = this.props;
         let units = [
             <MenuItem key='days' value='days'>Day(s)</MenuItem>,
             <MenuItem key='weeks' value='weeks'>Week(s)</MenuItem>,
@@ -95,19 +102,19 @@ class TrackedPeriod extends React.Component {
         return (
             <span>
                 <TextField
-                    inputProps={{ style: TrackedPeriod.styles.periodName}}
+                    inputProps={{ style: TrackedPeriod.styles.periodName } as React.CSSProperties}
                     value={name}
                     onChange={event => nameOnChange(event.target.value)}/>:
                 from <TextField
                     error={TrackedPeriod.toValue(fromDuration.value) === null}
-                    inputProps={{style: TrackedPeriod.styles.periodValue}}
+                    inputProps={{ style: TrackedPeriod.styles.periodValue } as React.CSSProperties}
                     value={fromDuration.value}
                     onChange={this.valueOnChange(fromDuration, fromOnChange)} />
                 <Select value={fromDuration.unit}
                     onChange={this.unitOnChange(fromDuration, fromOnChange)}>{units}</Select> ago
                 to <TextField
                     error={TrackedPeriod.toValue(toDuration.value) === null}
-                    inputProps={{style: TrackedPeriod.styles.periodValue}}
+                    inputProps={{style: TrackedPeriod.styles.periodValue} as React.CSSProperties}
                     value={toDuration.value}
                     onChange={this.valueOnChange(toDuration, toOnChange)} />
                 <Select value={toDuration.unit}
@@ -117,7 +124,17 @@ class TrackedPeriod extends React.Component {
     }
 }
 
-class Settings extends React.Component {
+class Settings extends React.Component<{
+            classes: {
+                tableHead: string,
+                tableContent: string,
+                calendarList: string,
+            }
+        }> {
+
+    msgClient: MsgClient;
+    dialogPromiseResolver: (r: boolean) => void;
+
     state = {
         isLoggedIn: false,
         patterns: [],
@@ -137,26 +154,26 @@ class Settings extends React.Component {
         this.msgClient = new MsgClient('main');
 
         this.msgClient.sendMsg({
-            type: MsgType.getPatterns,
+            opt: MsgType.getPatterns,
             data: { id: 'main' }
         }).then(msg => {
             this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
         });
 
         this.msgClient.sendMsg({
-            type: MsgType.getCalendars,
+            opt: MsgType.getCalendars,
             data: { enabledOnly: false }
         }).then(msg => {
             this.setState({ calendars: msg.data });
         });
 
         this.msgClient.sendMsg({
-            type: MsgType.getConfig,
+            opt: MsgType.getConfig,
             data: ['trackedPeriods']
         }).then(msg => {
             let config = {
                 trackedPeriods: msg.data.trackedPeriods.map((p: TrackPeriodFlat) => (
-                    new TrackPeriod.inflate(p);
+                    new TrackPeriod.inflate(p)
                 ))
             };
             console.log(msg.data.trackedPeriods);
@@ -187,7 +204,7 @@ class Settings extends React.Component {
         var calendars = {...this.state.calendars};
         calendars[id].enabled = !calendars[id].enabled;
         this.msgClient.sendMsg({
-            type: MsgType.updateCalendars,
+            opt: MsgType.updateCalendars,
             data: calendars
         }).then(() => this.setState({ calendars }));
     }
@@ -236,14 +253,14 @@ class Settings extends React.Component {
                 calendars[id].enabled = this.state.calendars[id].enabled;
         }
         this.msgClient.sendMsg({
-            type: MsgType.updateCalendars,
+            opt: MsgType.updateCalendars,
             data: calendars
         }).then(() => this.setState({ calendars }));
     };
 
     loadPatterns = (patterns, id) => {
         this.msgClient.sendMsg({
-            type: MsgType.updatePatterns,
+            opt: MsgType.updatePatterns,
             data: { id, patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
@@ -293,8 +310,8 @@ class Settings extends React.Component {
 
     updateTrackedPeriods = trackedPeriods => {
         this.msgClient.sendMsg({
-            type: MsgType.updateConfig,
-            data: { trackedPeriods: trackedPeriods.map(p => p.deflate())) }
+            opt: MsgType.updateConfig,
+            data: { trackedPeriods: trackedPeriods.map(p => p.deflate()) }
         }).then(() => this.setState({...this.state.config, trackedPeriods }));
     }
 
@@ -421,9 +438,5 @@ class Settings extends React.Component {
         );
     }
 }
-
-Settings.propTypes = {
-    classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(Settings);
