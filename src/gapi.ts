@@ -70,7 +70,17 @@ export async function logout() {
     loggedIn = false;
 }
 
-export async function getCalendars(token: string) {
+export type GCalendarColor = {
+    background: string
+};
+
+export type GCalendarMeta = {
+    name: string,
+    color: GCalendarColor,
+    enabled: boolean
+};
+
+export async function getCalendars(token: string): Promise<GCalendarMeta> {
     let response = await fetch(
         `${gapiBase}/users/me/calendarList?${to_params({access_token: token})}`, { method: 'GET' });
     return (await response.json()).items;
@@ -127,19 +137,53 @@ function getEvents(calId: string, token: string,
     return singleFetch('', syncToken);
 }
 
-type GCalendarOptions = {
+export type GCalendarOptions = {
     maxCachedItems: number,
     nDaysPerSlot: number,
     largeQuery: number
 };
 
-type GCalendarEvent = {
+type Event = {
     start: Date,
     end: Date,
     id: string
 };
 
-type GCalendarSlot = { [id: string]: GCalendarEvent };
+export type GCalendarEventFlat = {
+    start: string,
+    end: string,
+    id: string,
+    summary: string
+};
+
+export class GCalendarEvent {
+    start: Date;
+    end: Date;
+    id: string;
+    summary: string;
+
+    constructor(start: Date, end: Date, id: string, summary: string) {
+        this.start = start;
+        this.end = end;
+        this.id = id;
+        this.summary = summary;
+    }
+
+    deflate() {
+        return {
+            start: this.start.toISOString(),
+            end: this.end.toISOString(),
+            id: this.id,
+            summary: this.summary
+        };
+    }
+
+    static inflate = (obj: GCalendarEventFlat) => (
+        new GCalendarEvent(new Date(obj.start), new Date(obj.end), obj.id, obj.summary)
+    );
+}
+
+type GCalendarSlot = { [id: string]: Event };
 
 export class GCalendar {
     calId: string;
@@ -255,12 +299,12 @@ export class GCalendar {
         for (let id in s) {
             if (!(s[id].start >= r.end || s[id].end <= r.start))
             {
-                results.push({
+                results.push(new GCalendarEvent(
+                    s[id].start < r.start ? r.start: s[id].start,
+                    s[id].end > r.end ? r.end: s[id].end,
                     id,
-                    start: s[id].start < r.start ? r.start: s[id].start,
-                    end: s[id].end > r.end ? r.end: s[id].end,
-                    summary: this.eventMeta[id].summary
-                });
+                    this.eventMeta[id].summary
+                ));
             }
         }
         return results;
@@ -275,7 +319,11 @@ export class GCalendar {
         {
             let s = this.getSlot(k);
             for (let id in s)
-                results.push({...s[id], summary: this.eventMeta[id].summary});
+                results.push(new GCalendarEvent(
+                    s[id].start,
+                    s[id].end,
+                    s[id].id,
+                    this.eventMeta[id].summary));
         }
         if (ke > ks)
             results.push(...this.getSlotEvents(ke, _r));
@@ -305,7 +353,7 @@ export class GCalendar {
         }
     }
 
-    async getEvents(start: Date, end: Date) {
+    async getEvents(start: Date, end: Date): Promise<GCalendarEvent[]> {
         let r = this.dateRangeToCacheKeys({ start, end });
         let query = {
             start: null as number,
@@ -332,12 +380,13 @@ export class GCalendar {
                     e.start = new Date(e.start.dateTime);
                     e.end = new Date(e.end.dateTime);
                     return e;
-                }).filter(e => !(e.start >= end || e.end <= start)).map(e => ({
-                    id: e.id,
-                    start: e.start < start ? start: e.start,
-                    end: e.end > end ? end: e.end,
-                    summary: e.summary,
-                }));
+                }).filter(e => !(e.start >= end || e.end <= start)).map(e => (
+                    new GCalendarEvent(
+                        e.start < start ? start: e.start,
+                        e.end > end ? end: e.end,
+                        e.id,
+                        e.summary)
+                ));
             }
 
             console.log(`fetching short event list`);

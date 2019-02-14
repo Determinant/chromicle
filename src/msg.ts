@@ -11,7 +11,7 @@ export enum MsgType {
     getGraphData = "getGraphData"
 }
 
-function stringifyMsgType(mt: MsgType): string { return MsgType[mt]; }
+function stringifyMsgType(opt: MsgType): string { return MsgType[opt]; }
 
 function parseMsgType(s: string): MsgType {
     switch (s) {
@@ -28,23 +28,23 @@ function parseMsgType(s: string): MsgType {
 
 export class Msg<T> {
     id: number;
-    mt: MsgType;
+    opt: MsgType;
     data: T;
-    constructor(id: number, mt: MsgType, data: T) {
+    constructor(id: number, opt: MsgType, data: T) {
         this.id = id;
-        this.mt = mt;
+        this.opt = opt;
         this.data = data;
     }
-    genResp(data: T) { return new Msg(this.id, this.mt, data); }
+    genResp(data: T) { return new Msg(this.id, this.opt, data); }
     deflate() {
         return {
             id: this.id,
-            mt: stringifyMsgType(this.mt),
+            opt: stringifyMsgType(this.opt),
             data: this.data
         }
     }
-    static inflate = <T>(obj: {id: number, mt: MsgType, data: T}) => (
-        new Msg(obj.id, parseMsgType(obj.mt), obj.data)
+    static inflate = <T>(obj: {id: number, opt: MsgType, data: T}) => (
+        new Msg(obj.id, parseMsgType(obj.opt), obj.data)
     );
 }
 
@@ -59,7 +59,7 @@ export class MsgClient {
     constructor(channelName: string) {
         let port = chrome.runtime.connect({name: channelName});
         const rcb = this.requestCallback;
-        port.onMessage.addListener(function(msg) {
+        port.onMessage.addListener((msg) => {
             console.log(msg);
             let cb = rcb.inFlight[msg.id];
             console.assert(cb !== undefined);
@@ -70,10 +70,10 @@ export class MsgClient {
         this.requestCallback = {inFlight: {}, ids: [], maxId: 0};
     }
 
-    sendMsg({ mt, data }: { mt: MsgType, data: any }) {
+    sendMsg({ opt, data }: { opt: MsgType, data: any }): Promise<Msg<any>> {
         const rcb = this.requestCallback;
         let cb;
-        let pm = new Promise(resolve => { cb = resolve; });
+        let pm = new Promise<Msg<any>>(resolve => { cb = resolve; });
         let id;
         if (rcb.ids.length > 0) {
             id = rcb.ids.pop();
@@ -81,7 +81,7 @@ export class MsgClient {
             id = rcb.maxId++;
         }
         rcb.inFlight[id] = cb;
-        this.port.postMessage((new Msg(id, mt, data)).deflate());
+        this.port.postMessage((new Msg(id, opt, data)).deflate());
         return pm;
     }
 }

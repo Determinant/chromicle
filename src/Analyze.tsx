@@ -16,14 +16,14 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
-import { Pattern, PatternEntry } from './pattern';
+import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import { AnalyzePieChart, getChartData } from './Chart';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
 import moment from 'moment';
 
-const default_chart_data = [
+const defaultChartData = [
     {name: 'Work', value: 10, color: cyan[300]},
     {name: 'Wasted', value: 10, color: deepOrange[300]}];
 
@@ -35,14 +35,15 @@ const styles = (theme: Theme) => ({
 
 class Analyze extends React.Component {
     msgClient: MsgClient;
+    dialogPromiseResolver: (r: boolean) => void;
 
     state = {
         patterns: [] as PatternEntry[],
-        calendars: {},
+        calendars: {} as { [id: string]: gapi.GCalendarMeta },
         startDate: null as moment.Moment,
         endDate: null as moment.Moment,
-        patternGraphData: default_chart_data,
-        calendarGraphData: default_chart_data,
+        patternGraphData: defaultChartData,
+        calendarGraphData: defaultChartData,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
         snackBarVariant: 'error',
@@ -56,14 +57,16 @@ class Analyze extends React.Component {
         this.msgClient = new MsgClient('main');
 
         this.msgClient.sendMsg({
-            type: MsgType.getPatterns,
+            opt: MsgType.getPatterns,
             data: { id: 'analyze' }
         }).then(msg => {
-            this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
+            this.setState({
+                patterns: msg.data.map((p: PatternEntryFlat) => PatternEntry.inflate(p))
+            });
         });
 
         this.msgClient.sendMsg({
-            type: MsgType.getCalendars,
+            opt: MsgType.getCalendars,
             data: { enabledOnly: true }
         }).then(msg => {
             this.setState({ calendars: msg.data });
@@ -77,14 +80,15 @@ class Analyze extends React.Component {
 
     loadPatterns = (patterns: PatternEntry[]) => {
         this.msgClient.sendMsg({
-            type: MsgType.updatePatterns,
+            opt: MsgType.updatePatterns,
             data: { id: 'analyze', patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
 
     updatePattern = (field: string, idx: number, value: PatternEntry[]) => {
         let patterns = this.state.patterns;
-        patterns[idx][field] = value;
+        // hack here
+        (patterns[idx] as {[key: string]: any})[field] = value;
         this.loadPatterns(patterns);
     };
 
@@ -103,16 +107,16 @@ class Analyze extends React.Component {
         this.loadPatterns(patterns);
     };
 
-    getCalEvents = (id: string, start: Date, end: Date) => {
-        return this.msgClient.sendMsg({ type: MsgType.getCalEvents, data: { id,
-            start: start.getTime(),
-            end: end.getTime() } })
-            .then(({ data }) => data.map(e => {
-                return {
-                    id: e.id,
-                    start: new Date(e.start),
-                    end: new Date(e.end) }
-            }));
+    getCalEvents = async (id: string, start: Date, end: Date): Promise<gapi.GCalendarEvent[]> => {
+        let { data } = await this.msgClient.sendMsg({
+            opt: MsgType.getCalEvents,
+            data: { id,
+                    start: start.getTime(),
+                end: end.getTime() }
+        });
+        return data.map((_e: gapi.GCalendarEventFlat) => (
+            gapi.GCalendarEvent.inflate(_e)
+        ));
     }
 
     analyze = () => {
@@ -160,12 +164,12 @@ class Analyze extends React.Component {
         });
     }
 
-    handleSnackbarClose = (event, reason) => {
+    handleSnackbarClose = (event: React.SyntheticEvent<{}>, reason: string) => {
         if (reason === 'clickaway') return;
         this.setState({ snackBarOpen: false });
     }
 
-    handleSnackbarOpen = (msg, variant) => {
+    handleSnackbarOpen = (msg: string, variant) => {
         this.setState({ snackBarOpen: true, snackBarMsg: msg, snackBarVariant: variant });
     }
 

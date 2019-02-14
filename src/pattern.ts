@@ -1,8 +1,8 @@
-interface PatternFlat {
-    id: number | string;
-    isRegex: boolean;
-    value: string;
-    label: string;
+export type PatternFlat = {
+    id: number | string,
+    isRegex: boolean,
+    value: string,
+    label: string
 }
 
 export class Pattern {
@@ -33,16 +33,16 @@ export class Pattern {
     static inflate = (obj: PatternFlat) => new Pattern(obj.id, obj.isRegex, obj.value, obj.label);
 }
 
-interface PatternEntryColor {
+export type PatternEntryColor = {
     background: string
 }
 
-interface PatternEntryFlat {
-    name: string;
-    idx: number;
-    cal: PatternFlat;
-    event: PatternFlat;
-    color: PatternEntryColor;
+export type PatternEntryFlat = {
+    name: string,
+    idx: number,
+    cal: PatternFlat,
+    event: PatternFlat,
+    color: PatternEntryColor
 }
 
 export class PatternEntry {
