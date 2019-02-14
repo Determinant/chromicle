@@ -1,22 +1,22 @@
 import * as gapi from './gapi';
-import { msgType, Msg } from './msg';
-import { Duration } from './duration';
+import { MsgType, Msg } from './msg';
+import { Duration, TrackPeriod } from './duration';
 import moment from 'moment';
-import { getChartData } from './Chart';
+import { GraphData, getGraphData } from './graph';
 import { PatternEntry } from './pattern';
 
-let mainPatterns: number[] = [];
-let analyzePatterns = [];
-let calendars = {};
-let calData = {};
-let config = {
+let mainPatterns: PatternEntry[] = [];
+let analyzePatterns: PatternEntry[] = [];
+let calendars: {[id: string]: gapi.GCalendarMeta} = {};
+let calData: {[id: string]: gapi.GCalendar} = {};
+let config: TrackPeriod[] = {
     trackedPeriods: [
         {name: 'Today', start: Duration.days(1), end: Duration.days(0)},
         {name: 'Yesterday', start: Duration.days(2), end: Duration.days(1)},
         {name: 'This Week', start: Duration.weeks(1), end: Duration.weeks(0)},
         {name: 'This Month', start: Duration.months(1), end: Duration.months(0)}]
 };
-let mainGraphData = [];
+let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
 
 function loadMetadata() {
@@ -107,7 +107,9 @@ function updateMainGraphData() {
                 end: e.end.getTime()
             })))).then(results => {
             mainGraphData[i] = {
-                name: p.name, start, end,
+                name: p.name,
+                start: start.toDate(),
+                end: end.toDate(),
                 data: results.patternGraphData
             };
         }));
@@ -133,7 +135,7 @@ chrome.runtime.onConnect.addListener(function(port) {
         let msg = Msg.inflate(_msg);
         console.log(msg);
         switch (msg.type) {
-        case msgType.updatePatterns: {
+        case MsgType.updatePatterns: {
             let patterns = msg.data.patterns.map(p => PatternEntry.inflate(p));
             if (msg.data.id == 'analyze')
                 analyzePatterns = patterns;
@@ -143,7 +145,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             port.postMessage(msg.genResp(null));
             break;
         }
-        case msgType.getPatterns: {
+        case MsgType.getPatterns: {
             let patterns;
             if (msg.data.id == 'analyze')
                 patterns = analyzePatterns;
@@ -152,13 +154,13 @@ chrome.runtime.onConnect.addListener(function(port) {
             port.postMessage(msg.genResp(patterns.map(p => p.deflate())));
             break;
         }
-        case msgType.updateCalendars: {
+        case MsgType.updateCalendars: {
             calendars = msg.data;
             dirtyMetadata = true;
             port.postMessage(msg.genResp(null));
             break;
         }
-        case msgType.getCalendars: {
+        case MsgType.getCalendars: {
             let cals = calendars;
             if (msg.data.enabledOnly)
             {
@@ -169,7 +171,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             port.postMessage(msg.genResp(cals));
             break;
         }
-        case msgType.getCalEvents: {
+        case MsgType.getCalEvents: {
             getCalEvents(msg.data.id, msg.data.start, msg.data.end).then(data => {
                 console.log(data);
                 let resp = msg.genResp(data.map(e => {
@@ -184,7 +186,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             });
             break;
         }
-        case msgType.updateConfig: {
+        case MsgType.updateConfig: {
             config.trackedPeriods = msg.data.trackedPeriods.map(p => ({
                 name: p.name,
                 start: Duration.inflate(p.start),
@@ -194,13 +196,13 @@ chrome.runtime.onConnect.addListener(function(port) {
             port.postMessage(msg.genResp(null));
             break;
         }
-        case msgType.getConfig: {
+        case MsgType.getConfig: {
             let res = {};
             msg.data.forEach(prop => res[prop] = config[prop]);
             port.postMessage(msg.genResp(res));
             break;
         }
-        case msgType.getGraphData: {
+        case MsgType.getGraphData: {
             (msg.data.sync ? updateMainGraphData() : Promise.resolve()).then(() => (
                 port.postMessage(msg.genResp(mainGraphData.map(d => ({
                     name: d.name,

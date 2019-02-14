@@ -24,3 +24,9 @@ export class Duration {
     deflate() { return { value: this.value, unit: this.unit }; }
     static inflate = (obj: { value: number, unit: TimeUnit }) => new Duration(obj.value, obj.unit);
 }
+
+export type TrackPeriod = {
+    name: string,
+    start: Duration,
+    end: Duration
+};

@@ -33,7 +33,7 @@ const styles = (theme: Theme) => ({
     },
 });
 
-class Analyze extends React.Component {
+class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
     msgClient: MsgClient;
     dialogPromiseResolver: (r: boolean) => void;
 
@@ -48,7 +48,8 @@ class Analyze extends React.Component {
         snackBarMsg: 'unknown',
         snackBarVariant: 'error',
         dialogOpen: false,
-        dialogMsg: {title: '', message: ''}
+        dialogMsg: {title: '', message: ''},
+        focusedInput: null as any
     };
 
     constructor(props: any) {
@@ -135,7 +136,7 @@ class Analyze extends React.Component {
     }
 
     reset = () => {
-        this.handleDialogOpen("Reset", "Are you sure to reset the patterns?").then(ans => {
+        this.openDialog("Reset", "Are you sure to reset the patterns?").then(ans => {
             if (!ans) return;
             this.loadPatterns([]);
             this.setState({ startDate: null, endDate: null });
@@ -158,7 +159,7 @@ class Analyze extends React.Component {
     }
 
     default = () => {
-        this.handleDialogOpen("Load Default", "Load the calendars as patterns?").then(ans => {
+        this.openDialog("Load Default", "Load the calendars as patterns?").then(ans => {
             if (!ans) return;
             this.loadDefaultPatterns();
         });
@@ -169,11 +170,11 @@ class Analyze extends React.Component {
         this.setState({ snackBarOpen: false });
     }
 
-    handleSnackbarOpen = (msg: string, variant) => {
+    handleSnackbarOpen = (msg: string, variant: any) => {
         this.setState({ snackBarOpen: true, snackBarMsg: msg, snackBarVariant: variant });
     }
 
-    handleDialogOpen = (title, message) => {
+    openDialog(title: string, message: string) {
         let pm = new Promise(resolver => {
             this.dialogPromiseResolver = resolver
         });
@@ -181,7 +182,7 @@ class Analyze extends React.Component {
         return pm;
     }
 
-    handleDialogClose = result => {
+    handleDialogClose = (result: boolean) => {
         this.dialogPromiseResolver(result);
         this.setState({ dialogOpen: false });
     }
@@ -226,11 +227,12 @@ class Analyze extends React.Component {
                                     startDateId="start_date_id"
                                     endDate={this.state.endDate}
                                     endDateId="end_date_id"
-                                    onDatesChange={({ startDate, endDate }) => {
+                                    onDatesChange={({ startDate, endDate }:
+                                                    { startDate: moment.Moment, endDate: moment.Moment }) => {
                                         this.setState({ startDate, endDate });
-                                    }} 
+                                    }}
                                     focusedInput={this.state.focusedInput}
-                                    onFocusChange={focusedInput => this.setState({ focusedInput })}
+                                    onFocusChange={(focusedInput: any) => this.setState({ focusedInput })}
                                     isOutsideRange={() => false} />
                             </div>
                         </FormGroup>
@@ -267,8 +269,5 @@ class Analyze extends React.Component {
     }
 }
 
-Analyze.propTypes = {
-    classes: PropTypes.object.isRequired,
-};
 
 export default withStyles(styles)(Analyze);
