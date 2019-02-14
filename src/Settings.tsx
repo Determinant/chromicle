@@ -155,13 +155,9 @@ class Settings extends React.Component {
             data: ['trackedPeriods']
         }).then(msg => {
             let config = {
-                trackedPeriods: msg.data.trackedPeriods.map(p => {
-                    return {
-                        start: Duration.inflate(p.start),
-                        end: Duration.inflate(p.end),
-                        name: p.name
-                    };
-                })
+                trackedPeriods: msg.data.trackedPeriods.map((p: TrackPeriodFlat) => (
+                    new TrackPeriod.inflate(p);
+                ))
             };
             console.log(msg.data.trackedPeriods);
             this.setState({ config });
@@ -298,11 +294,7 @@ class Settings extends React.Component {
     updateTrackedPeriods = trackedPeriods => {
         this.msgClient.sendMsg({
             type: MsgType.updateConfig,
-            data: { trackedPeriods: trackedPeriods.map(p => ({
-                name: p.name,
-                start: p.start.deflate(),
-                end: p.end.deflate()
-            })) }
+            data: { trackedPeriods: trackedPeriods.map(p => p.deflate())) }
         }).then(() => this.setState({...this.state.config, trackedPeriods }));
     }
 

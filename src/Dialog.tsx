@@ -9,11 +9,15 @@ import Slide from '@material-ui/core/Slide';
 
 // modified from https://material-ui.com/demos/dialogs/
 
-function Transition(props) {
+function Transition(props: any) {
     return <Slide direction="up" {...props} />;
 }
 
-function AlertDialog(props) {
+function AlertDialog(props: {
+        open: boolean,
+        handleClose: (r: boolean) => any,
+        title: string,
+        message: string}) {
     return (
         <Dialog
             open={props.open}

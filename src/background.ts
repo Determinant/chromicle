@@ -1,20 +1,20 @@
 import * as gapi from './gapi';
 import { MsgType, Msg } from './msg';
-import { Duration, TrackPeriod } from './duration';
+import { Duration, TrackPeriod, TrackPeriodFlat } from './duration';
 import moment from 'moment';
 import { GraphData, getGraphData } from './graph';
-import { PatternEntry } from './pattern';
+import { PatternEntry, PatternEntryFlat } from './pattern';
 
 let mainPatterns: PatternEntry[] = [];
 let analyzePatterns: PatternEntry[] = [];
 let calendars: {[id: string]: gapi.GCalendarMeta} = {};
 let calData: {[id: string]: gapi.GCalendar} = {};
-let config: TrackPeriod[] = {
+let config = {
     trackedPeriods: [
-        {name: 'Today', start: Duration.days(1), end: Duration.days(0)},
-        {name: 'Yesterday', start: Duration.days(2), end: Duration.days(1)},
-        {name: 'This Week', start: Duration.weeks(1), end: Duration.weeks(0)},
-        {name: 'This Month', start: Duration.months(1), end: Duration.months(0)}]
+        new TrackPeriod('Today', Duration.days(1), Duration.days(0)),
+        new TrackPeriod('Yesterday', Duration.days(2), Duration.days(1)),
+        new TrackPeriod('This Week', Duration.weeks(1), Duration.weeks(0)),
+        new TrackPeriod('This Month', Duration.months(1), Duration.months(0))] as TrackPeriod[]
 };
 let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
@@ -31,15 +31,15 @@ function loadMetadata() {
         {
             console.log('metadata loaded');
             config = {
-                trackedPeriods: items.config.trackedPeriods.map(p => ({
+                trackedPeriods: items.config.trackedPeriods.map((p: TrackPeriod) => ({
                     name: p.name,
                     start: Duration.inflate(p.start),
                     end: Duration.inflate(p.end),
                 }))
             };
             calendars = items.calendars;
-            mainPatterns = items.mainPatterns.map(p => PatternEntry.inflate(p));
-            analyzePatterns = items.analyzePatterns.map(p => PatternEntry.inflate(p));
+            mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
+            analyzePatterns = items.analyzePatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
         }
         resolver();
     }));
@@ -63,15 +63,17 @@ function saveMetadata() {
     }));
 }
 
-function getCalEvents(id, start, end) {
+async function getCalEvents(id: string, start: Date, end: Date) {
     if (!calData.hasOwnProperty(id))
-        calData[id] = new gapi.GCalendar(id, calendars[id].summary);
-    return calData[id].getEvents(new Date(start), new Date(end))
-        .catch(e => {
-            console.log(`cannot load calendar ${id}`, e);
-            calendars[id].enabled = false;
-            return [];
-        });
+        calData[id] = new gapi.GCalendar(id, calendars[id].name);
+    try {
+        let res = await calData[id].getEvents(new Date(start), new Date(end));
+        return res;
+    } catch(err) {
+        console.log(`cannot load calendar ${id}`, err);
+        calendars[id].enabled = false;
+        return [];
+    }
 }
 
 function updateMainGraphData() {
@@ -96,21 +98,15 @@ function updateMainGraphData() {
         let end = start.clone();
         start.subtract(startD);
         end.subtract(endD);
-        pms.push(getChartData(
-            start.toDate(),
-            end.toDate(),
-            mainPatterns,
-            calendars,
-            (id, start,end) => getCalEvents(id, start, end).then(d => d.map(e => ({
-                id: e.id,
-                start: e.start.getTime(),
-                end: e.end.getTime()
-            })))).then(results => {
+        pms.push(getGraphData(
+            start.toDate(), end.toDate(), mainPatterns, calendars,
+            getCalEvents
+        ).then(results => {
             mainGraphData[i] = {
-                name: p.name,
-                start: start.toDate(),
-                end: end.toDate(),
-                data: results.patternGraphData
+                    name: p.name,
+                    start: start.toDate(),
+                    end: end.toDate(),
+                    data: results.patternGraphData
             };
         }));
     }
@@ -131,12 +127,12 @@ loadMetadata().then(() => pollSync());
 
 chrome.runtime.onConnect.addListener(function(port) {
     console.assert(port.name == 'main');
-    port.onMessage.addListener(function(_msg) {
-        let msg = Msg.inflate(_msg);
+    port.onMessage.addListener(_msg => {
+        let msg = Msg.inflate<any>(_msg);
         console.log(msg);
-        switch (msg.type) {
+        switch (msg.opt) {
         case MsgType.updatePatterns: {
-            let patterns = msg.data.patterns.map(p => PatternEntry.inflate(p));
+            let patterns = msg.data.patterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
             if (msg.data.id == 'analyze')
                 analyzePatterns = patterns;
             else
@@ -166,13 +162,13 @@ chrome.runtime.onConnect.addListener(function(port) {
             {
                 cals = Object.keys(calendars)
                     .filter(id => calendars[id].enabled)
-                    .reduce((res, id) => (res[id] = calendars[id], res), {});
+                    .reduce((res, id) => (res[id] = calendars[id], res), {} as {[id: string]: gapi.GCalendarMeta});
             }
             port.postMessage(msg.genResp(cals));
             break;
         }
         case MsgType.getCalEvents: {
-            getCalEvents(msg.data.id, msg.data.start, msg.data.end).then(data => {
+            getCalEvents(msg.data.id, new Date(msg.data.start), new Date(msg.data.end)).then(data => {
                 console.log(data);
                 let resp = msg.genResp(data.map(e => {
                     return {
@@ -187,7 +183,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             break;
         }
         case MsgType.updateConfig: {
-            config.trackedPeriods = msg.data.trackedPeriods.map(p => ({
+            config.trackedPeriods = msg.data.trackedPeriods.map((p: TrackPeriodFlat) => ({
                 name: p.name,
                 start: Duration.inflate(p.start),
                 end: Duration.inflate(p.end)
@@ -197,13 +193,16 @@ chrome.runtime.onConnect.addListener(function(port) {
             break;
         }
         case MsgType.getConfig: {
-            let res = {};
-            msg.data.forEach(prop => res[prop] = config[prop]);
+            let res: {[prop: string]: any} = {};
+            msg.data.forEach((prop: string) => {
+                if (prop == 'trackedPeriods')
+                    res.trackedPeriods = config.trackedPeriods.map(p => p.deflate())
+            });
             port.postMessage(msg.genResp(res));
             break;
         }
         case MsgType.getGraphData: {
-            (msg.data.sync ? updateMainGraphData() : Promise.resolve()).then(() => (
+            (msg.data.sync ? updateMainGraphData().then(() => {}) : Promise.resolve()).then(() => (
                 port.postMessage(msg.genResp(mainGraphData.map(d => ({
                     name: d.name,
                     start: d.start.toISOString(),
@@ -213,7 +212,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             ));
             break;
         }
-        default: console.error("unknown msg type");
+        default: console.error("unknown msg opt");
         }
     });
 });

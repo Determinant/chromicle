@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { withStyles, MuiThemeProvider } from '@material-ui/core/styles';
+import { Theme, withStyles, MuiThemeProvider } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import RefreshIcon from '@material-ui/icons/Refresh';
@@ -12,6 +12,7 @@ import { PatternEntry } from './pattern';
 import { Duration } from './duration';
 import { MsgType, MsgClient } from './msg';
 import { StyledPatternPieChart } from './Chart';
+import { GraphData } from './graph';
 import Divider from '@material-ui/core/Divider';
 import moment from 'moment';
 
@@ -19,7 +20,7 @@ function openOptions() {
     chrome.tabs.create({ url: "index.html" });
 }
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     content: {
         padding: theme.spacing.unit * 1,
         overflow: 'auto',
@@ -34,24 +35,31 @@ const styles = theme => ({
     },
 });
 
-class Popup extends React.Component {
+class Popup extends React.Component<{
+            classes: {
+                content: string,
+                buttons: string,
+                buttonSpacer: string
+            }
+        }> {
+    msgClient: MsgClient;
     state = {
-        patternGraphData: [],
+        patternGraphData: [] as GraphData[],
         loading: false,
     };
-    constructor(props) {
+    constructor(props: any) {
         super(props);
         this.msgClient = new MsgClient('main');
-        this.loading = true;
+        this.state.loading = true;
         this.loadGraphData(false).then(() => this.setState({ loading: false }));
     }
 
-    loadGraphData(sync) {
+    loadGraphData(sync: boolean) {
         return this.msgClient.sendMsg({
-            type: MsgType.getGraphData,
+            opt: MsgType.getGraphData,
             data: { sync }
         }).then(msg => {
-            this.setState({ patternGraphData: msg.data.map(d => ({
+            this.setState({ patternGraphData: msg.data.map((d: GraphData) => ({
                 name: d.name,
                 data: d.data,
                 start: new Date(d.start),

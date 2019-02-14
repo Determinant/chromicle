@@ -1,5 +1,5 @@
 import React from 'react';
-export default (props) =>
+export default (props: {style: {[key: string]: string | number }}) =>
   <svg
      xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 98.905998 93.557997"

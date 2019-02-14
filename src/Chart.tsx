@@ -1,18 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import cyan from '@material-ui/core/colors/cyan';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { defaultChartColor } from './theme';
+import { PatternGraphData } from './graph';
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     pieChart: {
         margin: '0 auto',
     }
 });
 
-function customizedLabel(props) {
+function customizedLabel(props: {cx: number, cy: number,
+                                x: number, y: number,
+                                fill: string, name: string}) {
     const {cx, cy, x, y, fill, name} = props;
     let anchor = "middle";
     const EPS = 2;
@@ -35,7 +38,12 @@ function customizedLabel(props) {
     return (<text x={x} y={y} dx={dx} dy={dy} fill={fill} textAnchor={anchor}>{`${name}`}</text>);
 }
 
-function PatternPieChart(props) {
+function PatternPieChart(props: {
+        classes: {
+            patternTableWrapper: string,
+            pieChart: string
+        },
+        data: PatternGraphData[] }) {
     return (
           <Grid item xs={12} lg={6}>
             <div className={props.classes.patternTableWrapper}>
@@ -50,7 +58,7 @@ function PatternPieChart(props) {
                    label={customizedLabel}>
               {props.data.map((d, i) => <Cell key={i} fill={d.color ? d.color: defaultChartColor}/>)}
               </Pie>
-              <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
+              <Tooltip formatter={(value: number) => `${value.toFixed(2)} hr`}/>
             </PieChart>
             </div>
           </Grid>
@@ -59,7 +67,13 @@ function PatternPieChart(props) {
 
 export const StyledPatternPieChart = withStyles(styles)(PatternPieChart);
 
-function DoublePieChart(props) {
+function DoublePieChart(props: {
+    classes: {
+        patternTableWrapper: string,
+        pieChart: string
+    },
+    patternGraphData: PatternGraphData[],
+    calendarGraphData: PatternGraphData[] }) {
     return (
     <Grid container spacing={0}>
       <StyledPatternPieChart data={props.patternGraphData} />
@@ -77,16 +91,11 @@ function DoublePieChart(props) {
                label={customizedLabel}>
             {props.calendarGraphData.map((d, i) => <Cell key={i} fill={d.color ? d.color : cyan[300]}/>)}
           </Pie>
-          <Tooltip formatter={(value) => `${value.toFixed(2)} hr`}/>
+          <Tooltip formatter={(value: number) => `${value.toFixed(2)} hr`}/>
         </PieChart>
         </div>
       </Grid>
     </Grid>);
 }
-
-DoublePieChart.propTypes = {
-    patternGraphData: PropTypes.array.isRequired,
-    calendarGraphData: PropTypes.array.isRequired,
-};
 
 export const AnalyzePieChart = withStyles(styles)(DoublePieChart);

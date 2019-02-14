@@ -1,3 +1,7 @@
+import { GCalendarEvent, GCalendarMeta } from './gapi';
+import { PatternEntry } from './pattern';
+import { defaultChartColor} from './theme';
+
 export type PatternGraphData = {
     name: string,
     value: number,
@@ -8,10 +12,13 @@ export type GraphData = {
     name: string,
     start: Date,
     end: Date,
-    data: PatternGraphData
+    data: PatternGraphData[]
 };
 
-export function getGraphData(start, end, patterns, calendars, calEventsGetter) {
+export function getGraphData(
+        start: Date, end: Date,
+        patterns: PatternEntry[], calendars: { [id: string]: GCalendarMeta },
+        calEventsGetter: (id: string, start: Date, end: Date) => Promise<GCalendarEvent[]>) {
     if (start >= end) return Promise.resolve({ patternGraphData: [], calendarGraphData: [] });
     let event_pms = [];
     for (let id in calendars)
@@ -23,14 +30,16 @@ export function getGraphData(start, end, patterns, calendars, calEventsGetter) {
                 .then(r => { return { id, events: r, filtered }; }));
     }
     return Promise.all(event_pms).then(all_events => {
-        let events = {};
-        let patternsByCal = {};
-        let results = {}; // pattern idx => time
-        let cal_results = {}; // cal id => time
+        let events: {[id: string]: GCalendarEvent[]} = {};
+        let patternsByCal: {[id: string]: PatternEntry[]} = {};
+        let results: {[idx: number]: number} = {};
+        let cal_results: {[id: string]: number} = {};
+
         all_events.forEach(e => {
             events[e.id] = e.events;
             patternsByCal[e.id] = e.filtered;
         });
+
         for (let i = 0; i < patterns.length; i++)
             results[i] = 0;
         for (let id in calendars) {
@@ -41,7 +50,7 @@ export function getGraphData(start, end, patterns, calendars, calEventsGetter) {
                     if (!cal_results.hasOwnProperty(id)) {
                         cal_results[id] = 0;
                     }
-                    let duration = (event.end - event.start) / 60000;
+                    let duration = (event.end.getTime() - event.start.getTime()) / 60000;
                     results[p.idx] += duration;
                     cal_results[id] += duration;
                 });
@@ -49,7 +58,7 @@ export function getGraphData(start, end, patterns, calendars, calEventsGetter) {
         }
         let patternGraphData = [];
         let calendarGraphData = [];
-        const filterMarginal = data => {
+        const filterMarginal = (data: PatternGraphData[]) => {
             let sum = 0;
             let majorParts = [];
             let minorSum = 0;

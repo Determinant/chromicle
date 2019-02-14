@@ -17,7 +17,8 @@ import IconButton from '@material-ui/core/IconButton';
 import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
-import { AnalyzePieChart, getChartData } from './Chart';
+import { AnalyzePieChart } from './Chart';
+import { getGraphData } from './graph';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
@@ -127,7 +128,7 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         }
         let start = this.state.startDate.startOf('day').toDate();
         let end = this.state.endDate.startOf('day').toDate();
-        getChartData(start, end,
+        getGraphData(start, end,
                     this.state.patterns,
                     this.state.calendars,
                     this.getCalEvents).then(results => {
