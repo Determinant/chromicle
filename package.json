@@ -1,7 +1,7 @@
 {
   "name": "chromicle",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.2.0",
+  "description": "Track your time spent in different activities using Google Calendar.",
   "main": "index.js",
   "scripts": {
     "start": "webpack --mode development --watch",
