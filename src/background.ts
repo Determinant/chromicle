@@ -31,11 +31,7 @@ function loadMetadata() {
         {
             console.log('metadata loaded');
             config = {
-                trackedPeriods: items.config.trackedPeriods.map((p: TrackPeriod) => ({
-                    name: p.name,
-                    start: Duration.inflate(p.start),
-                    end: Duration.inflate(p.end),
-                }))
+                trackedPeriods: items.config.trackedPeriods.map((p: TrackPeriodFlat) => TrackPeriod.inflate(p))
             };
             calendars = items.calendars;
             mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
@@ -68,6 +64,7 @@ async function getCalEvents(id: string, start: Date, end: Date) {
         calData[id] = new gapi.GCalendar(id, calendars[id].name);
     try {
         let res = await calData[id].getEvents(new Date(start), new Date(end));
+        console.log(res);
         return res;
     } catch(err) {
         console.log(`cannot load calendar ${id}`, err);
@@ -170,13 +167,7 @@ chrome.runtime.onConnect.addListener(function(port) {
         case MsgType.getCalEvents: {
             getCalEvents(msg.data.id, new Date(msg.data.start), new Date(msg.data.end)).then(data => {
                 console.log(data);
-                let resp = msg.genResp(data.map(e => {
-                    return {
-                        id: e.id,
-                        start: e.start.getTime(),
-                        end: e.end.getTime()
-                    }
-                }));
+                let resp = msg.genResp(data.map(e => e.deflate()));
                 console.log(resp);
                 port.postMessage(resp);
             });
@@ -195,8 +186,8 @@ chrome.runtime.onConnect.addListener(function(port) {
         case MsgType.getConfig: {
             let res: {[prop: string]: any} = {};
             msg.data.forEach((prop: string) => {
-                if (prop == 'trackedPeriods')
-                    res.trackedPeriods = config.trackedPeriods.map(p => p.deflate())
+                if (prop === 'trackedPeriods')
+                    res.trackedPeriods = config.trackedPeriods.map(p => p.deflate());
             });
             port.postMessage(msg.genResp(res));
             break;

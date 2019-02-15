@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles } from '@material-ui/core/styles';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
-import { Pattern } from './pattern';
+import { Pattern, PatternEntry } from './pattern';
+import { GCalendarMeta } from './gapi';
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     fieldNoRegex: {
         width: 200
     },
@@ -16,12 +17,21 @@ const styles = theme => ({
     }
 });
 
-class RegexField extends React.Component {
+class RegexField extends React.Component<{
+            classes: {
+                fieldRegex: string,
+                fieldNoRegex: string
+            },
+            options: {[id: string]: Pattern},
+            theme: Theme,
+            value: Pattern,
+            onChange: (p: Pattern) => void
+        }>{
     render() {
         const { classes } = this.props;
-        let items = [];
+        let items: React.ReactElement<typeof MenuItem>[] = [];
         var pitems = this.props.options;
-        const p0 = new Pattern.emptyPattern();
+        const p0 = Pattern.emptyPattern();
         pitems[p0.id] = p0;
         for (let id in pitems)
         {
@@ -29,7 +39,7 @@ class RegexField extends React.Component {
                 <span style={{color: this.props.theme.palette.primary.dark}}>Custom</span>;
             items.push(<MenuItem key={id} value={id}>{label}</MenuItem>);
         }
-        const selectOnClick = event => {
+        const selectOnClick = (event: { target: { value: any }}) => {
             let value;
             if (pitems[event.target.value].label == null) {
                 value = new Pattern(0, true,
@@ -42,7 +52,7 @@ class RegexField extends React.Component {
             this.props.onChange(value);
         };
 
-        const regexTextOnChange = event => this.props.onChange(
+        const regexTextOnChange = (event: { target: { value: any }}) => this.props.onChange(
             new Pattern(0, true, event.target.value, null));
 
         const className = this.props.value.isRegex ? classes.fieldRegex: classes.fieldNoRegex;
@@ -64,14 +74,15 @@ class RegexField extends React.Component {
     }
 }
 
-RegexField.propTypes = {
-    classes: PropTypes.object.isRequired,
-};
-
 const RegexFieldWithStyles = withStyles(styles)(RegexField);
 
-export function CalendarField(props) {
-    let options = {};
+export function CalendarField(props: {
+            calendars: {[id: string]: GCalendarMeta},
+            theme: Theme,
+            onChange: (field: string, value: Pattern) => void,
+            value: PatternEntry
+        }) {
+    let options: {[id: string]: Pattern} = {};
     for (let id in props.calendars) {
         options[id] = new Pattern(id, false,
             props.calendars[id].name,
@@ -85,10 +96,14 @@ export function CalendarField(props) {
             theme={props.theme} />);
 }
 
-export function EventField(props) {
-    let any = Pattern.anyPattern();
-    let options = {};
-    options[any.id] = any;
+export function EventField(props: {
+            theme: Theme,
+            value: PatternEntry,
+            onChange: (field: string, value: Pattern) => void
+        }) {
+    let wildcard = Pattern.anyPattern();
+    let options: { [id: string]: Pattern } = {};
+    options[wildcard.id] = wildcard;
     return (
         <RegexFieldWithStyles
             value={props.value.event}

@@ -46,7 +46,10 @@ export function getGraphData(
             if (!events[id]) continue;
             events[id].forEach(event => {
                 patternsByCal[id].forEach(p => {
-                    if (!p.event.regex.test(event.summary)) return;
+                    if (!p.event.regex.test(event.summary)) {
+                        console.log(event.summary, p.event.regex);
+                        return;
+                    }
                     if (!cal_results.hasOwnProperty(id)) {
                         cal_results[id] = 0;
                     }

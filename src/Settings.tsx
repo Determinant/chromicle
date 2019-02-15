@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Theme, withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles, StyleRules } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -21,16 +21,16 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
-import { Pattern, PatternEntry } from './pattern';
+import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import PatternTable from './PatternTable';
 import Snackbar from './Snackbar';
 import AlertDialog from './Dialog';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { Duration } from './duration';
+import { Duration, TrackPeriod, TrackPeriodFlat } from './duration';
 
-const styles = (theme: Theme) => ({
+const styles = (theme: Theme): StyleRules => ({
     tableHead: {
         verticalAlign: 'top',
         textAlign: 'right',
@@ -137,9 +137,9 @@ class Settings extends React.Component<{
 
     state = {
         isLoggedIn: false,
-        patterns: [],
-        calendars: {},
-        config: {},
+        patterns: [] as PatternEntry[],
+        calendars: {} as {[id: string]: gapi.GCalendarMeta},
+        config: {} as { trackedPeriods: TrackPeriod[] },
         snackBarOpen: false,
         snackBarMsg: 'unknown',
         dialogOpen: false,
@@ -147,7 +147,7 @@ class Settings extends React.Component<{
         calendarsLoading: false,
     };
 
-    constructor(props) {
+    constructor(props: any) {
         super(props);
         gapi.getLoggedIn().then(b => this.setState({ isLoggedIn: b }));
 
@@ -157,7 +157,7 @@ class Settings extends React.Component<{
             opt: MsgType.getPatterns,
             data: { id: 'main' }
         }).then(msg => {
-            this.setState({ patterns: msg.data.map(p => PatternEntry.inflate(p)) });
+            this.setState({ patterns: msg.data.map((p: PatternEntryFlat) => PatternEntry.inflate(p)) });
         });
 
         this.msgClient.sendMsg({
@@ -173,7 +173,7 @@ class Settings extends React.Component<{
         }).then(msg => {
             let config = {
                 trackedPeriods: msg.data.trackedPeriods.map((p: TrackPeriodFlat) => (
-                    new TrackPeriod.inflate(p)
+                    TrackPeriod.inflate(p)
                 ))
             };
             console.log(msg.data.trackedPeriods);
@@ -200,7 +200,7 @@ class Settings extends React.Component<{
         });
     }
 
-    handleToggleCalendar = id => {
+    handleToggleCalendar = (id: string) => {
         var calendars = {...this.state.calendars};
         calendars[id].enabled = !calendars[id].enabled;
         this.msgClient.sendMsg({
@@ -212,23 +212,21 @@ class Settings extends React.Component<{
     async loadAll(loadPatterns = false) {
         await new Promise(resolver => (this.setState({ calendarsLoading: true }, resolver)));
 
-        let colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
+        let pm_colors = gapi.getAuthToken().then(gapi.getColors).then(color => {
             return color.calendar;
         });
-        let cals = gapi.getAuthToken().then(gapi.getCalendars);
-        await Promise.all([colors, cals]).then(([colors, items]) => {
-            var cals = {};
-            items.forEach(item => {
-                cals[item.id] = {
-                    name: item.summary,
-                    color: colors[item.colorId],
-                    enabled: true
-                    //cal: new gapi.GCalendar(item.id, item.summary)
-                }});
-            this.loadCalendars(cals);
-            if (loadPatterns)
-                this.loadDefaultPatterns();
+        let pm_cals = gapi.getAuthToken().then(gapi.getCalendars);
+        let [colors, _cals] = await Promise.all([pm_colors, pm_cals]);
+        var cals: { [id: string]: gapi.GCalendarMeta } = {};
+        _cals.forEach((cal: any) => {
+            cals[cal.id] = {
+                name: cal.summary,
+                color: colors[cal.colorId],
+                enabled: true
+            };
         });
+        this.loadCalendars(cals);
+        if (loadPatterns) this.loadDefaultPatterns();
         this.setState({ calendarsLoading: false });
     };
 
@@ -247,7 +245,7 @@ class Settings extends React.Component<{
         this.loadPatterns(patterns, 'main');
     }
 
-    loadCalendars = calendars => {
+    loadCalendars = (calendars: {[ id: string ]: gapi.GCalendarMeta }) => {
         for (let id in this.state.calendars) {
             if (calendars.hasOwnProperty(id))
                 calendars[id].enabled = this.state.calendars[id].enabled;
@@ -258,44 +256,44 @@ class Settings extends React.Component<{
         }).then(() => this.setState({ calendars }));
     };
 
-    loadPatterns = (patterns, id) => {
+    loadPatterns = (patterns: PatternEntry[], id: string) => {
         this.msgClient.sendMsg({
             opt: MsgType.updatePatterns,
             data: { id, patterns: patterns.map(p => p.deflate()) }
         }).then(() => this.setState({ patterns }));
     };
 
-    updatePattern = (field, idx, value) => {
+    updatePattern = (field: string, idx: number, value: any) => {
         let patterns = this.state.patterns;
-        patterns[idx][field] = value;
-        this.loadPatterns(patterns);
+        (patterns[idx] as {[key: string]: any})[field] = value;
+        this.loadPatterns(patterns, 'main');
     };
 
-    removePattern = idx => {
+    removePattern = (idx: number) => {
         let patterns = this.state.patterns;
         patterns.splice(idx, 1);
         for (let i = 0; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.loadPatterns(patterns);
+        this.loadPatterns(patterns, 'main');
     };
 
     newPattern = () => {
         let patterns = [PatternEntry.defaultPatternEntry(0), ...this.state.patterns];
         for (let i = 1; i < patterns.length; i++)
             patterns[i].idx = i;
-        this.loadPatterns(patterns);
+        this.loadPatterns(patterns, 'main');
     };
 
-    handleSnackbarClose = (event, reason) => {
+    handleSnackbarClose = (event: any, reason: string) => {
         if (reason === 'clickaway') return;
         this.setState({ snackBarOpen: false });
     }
 
-    handleSnackbarOpen = msg => {
+    handleSnackbarOpen = (msg: string) => {
         this.setState({ snackBarOpen: true, snackBarMsg: msg });
     }
 
-    handleDialogOpen = (title, message) => {
+    handleDialogOpen = (title: string, message: string) => {
         let pm = new Promise(resolver => {
             this.dialogPromiseResolver = resolver
         });
@@ -303,31 +301,31 @@ class Settings extends React.Component<{
         return pm;
     }
 
-    handleDialogClose = result => {
+    handleDialogClose = (result: boolean) => {
         this.dialogPromiseResolver(result);
         this.setState({ dialogOpen: false });
     }
 
-    updateTrackedPeriods = trackedPeriods => {
+    updateTrackedPeriods = (trackedPeriods: TrackPeriod[]) => {
         this.msgClient.sendMsg({
             opt: MsgType.updateConfig,
             data: { trackedPeriods: trackedPeriods.map(p => p.deflate()) }
         }).then(() => this.setState({...this.state.config, trackedPeriods }));
     }
 
-    handlePeriodNameChange = idx => name => {
+    handlePeriodNameChange = (idx: number) => (name: string) => {
         let trackedPeriods = [...this.state.config.trackedPeriods];
         trackedPeriods[idx].name = name;
         this.updateTrackedPeriods(trackedPeriods);
     }
 
-    handlePeriodFromChange = idx => duration => {
+    handlePeriodFromChange = (idx: number) => (duration: Duration) => {
         let trackedPeriods = [...this.state.config.trackedPeriods];
         trackedPeriods[idx].start = duration;
         this.updateTrackedPeriods(trackedPeriods);
     }
 
-    handlePeriodToChange = idx => duration => {
+    handlePeriodToChange = (idx: number) => (duration: Duration) => {
         let trackedPeriods = [...this.state.config.trackedPeriods];
         trackedPeriods[idx].end = duration;
         this.updateTrackedPeriods(trackedPeriods);
@@ -439,4 +437,6 @@ class Settings extends React.Component<{
     }
 }
 
-export default withStyles(styles)(Settings);
+const StyledSettings = withStyles(styles)(Settings);
+
+export default StyledSettings;

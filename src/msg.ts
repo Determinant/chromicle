@@ -19,10 +19,11 @@ function parseMsgType(s: string): MsgType {
         case "getPatterns": return MsgType.getPatterns;
         case "updateCalendars" : return MsgType.updateCalendars;
         case "getCalendars": return MsgType.getCalendars;
+        case "getCalEvents": return MsgType.getCalEvents;
         case "updateConfig": return MsgType.updateConfig;
         case "getConfig": return MsgType.getConfig;
         case "getGraphData": return MsgType.getGraphData;
-        default: console.error("unreachable");
+        default: console.error(`unknown MsgType: ${s}`);
     }
 }
 
@@ -58,6 +59,7 @@ export class MsgClient {
 
     constructor(channelName: string) {
         let port = chrome.runtime.connect({name: channelName});
+        this.requestCallback = {inFlight: {}, ids: [], maxId: 0};
         const rcb = this.requestCallback;
         port.onMessage.addListener((msg) => {
             console.log(msg);
@@ -67,7 +69,6 @@ export class MsgClient {
             cb(msg);
         });
         this.port = port;
-        this.requestCallback = {inFlight: {}, ids: [], maxId: 0};
     }
 
     sendMsg({ opt, data }: { opt: MsgType, data: any }): Promise<Msg<any>> {

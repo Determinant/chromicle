@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Theme, withStyles, withTheme } from '@material-ui/core/styles';
+import { Theme, withStyles, withTheme, StyleRules } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -16,7 +16,7 @@ import { theme, defaultChartColor } from './theme';
 import { PatternEntry, PatternEntryColor } from './pattern';
 import { GCalendarMeta } from './gapi';
 
-const styles = (theme: Theme) => ({
+const styles = (theme: Theme): StyleRules => ({
     deleteButton: {
         width: 0,
         position: 'absolute',
@@ -74,8 +74,8 @@ function NameField(props: {
 
 const patternHead = [
     {label: "Name", elem: withStyles(nameFieldstyles)(NameField)},
-    {label: "Calendar", elem: withTheme(theme)(CalendarField)},
-    {label: "Event", elem: withTheme(theme)(EventField)}] as {label: string, elem: any}[];
+    {label: "Calendar", elem: withTheme()(CalendarField)},
+    {label: "Event", elem: withTheme()(EventField)}] as {label: string, elem: any}[];
 
 class PatternTable extends React.Component<{
             classes: {
@@ -178,15 +178,15 @@ class PatternTable extends React.Component<{
                     }}>
                     <MaterialColorPicker
                         initColor={this.state.colorPickerDefault}
-                        onSelect={(event: any) => {
+                        onSelect={(event: { target: { value: any }}) => {
                             console.log("select");
                             this.chosenColor = event.target.value;
                         }}
                         onSubmit={this.handleColorPickerClose}
                         onReset={() => {}}
                         style={{width: 400, backgroundColor: '#c7c7c7'}}
-                        submitLabel='Apply'
-                        resetLabel='Undo'
+                        submitLabel='Ok'
+                        resetLabel='Reset'
                     />
                 </Popover>
                 <div className={classes.patternTableWrapper}>

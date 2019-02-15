@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import { Theme, withStyles } from '@material-ui/core/styles';
 import amber from '@material-ui/core/colors/amber';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
@@ -17,7 +17,7 @@ const variantIcon = {
     warning: WarningIcon,
 };
 
-const styles = theme => ({
+const styles = (theme: Theme) => ({
     error: {
         backgroundColor: theme.palette.error.dark,
     },
@@ -37,8 +37,24 @@ const styles = theme => ({
     },
 });
 
-function CustomSnackbar(props) {
-    const { classes, className, message, variant, open, onClose, ...other } = props;
+export type Variant = 'error' | 'warning';
+
+function CustomSnackbar(props: {
+        classes: {
+            error: string,
+            warning: string,
+            message: string,
+            icon: string,
+            iconVariant: string,
+            close: string
+        },
+        variant: Variant,
+        className?: string,
+        open: boolean,
+        message: string,
+        onClose: (event: React.SyntheticEvent<{}>, reason?: string) => void
+    }) {
+    const { classes, className, message, variant, open, onClose } = props;
     const Icon = variantIcon[variant];
     return (
         <Snackbar
@@ -69,7 +85,6 @@ function CustomSnackbar(props) {
                         <CloseIcon className={classes.icon} />
                     </IconButton>,
                 ]}
-                {...other}
             />
         </Snackbar>
     );

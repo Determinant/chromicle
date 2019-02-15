@@ -18,7 +18,7 @@ function to_params(dict: Object) {
         )).join('&');
 }
 
-let loggedIn = false;
+let loggedIn: boolean = null;
 
 function _getAuthToken(interactive = false): Promise<string> {
     return new Promise(resolver =>
@@ -80,7 +80,7 @@ export type GCalendarMeta = {
     enabled: boolean
 };
 
-export async function getCalendars(token: string): Promise<GCalendarMeta> {
+export async function getCalendars(token: string): Promise<any> {
     let response = await fetch(
         `${gapiBase}/users/me/calendarList?${to_params({access_token: token})}`, { method: 'GET' });
     return (await response.json()).items;

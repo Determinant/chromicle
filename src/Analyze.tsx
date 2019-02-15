@@ -20,7 +20,7 @@ import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import { AnalyzePieChart } from './Chart';
 import { getGraphData } from './graph';
 import PatternTable from './PatternTable';
-import Snackbar from './Snackbar';
+import Snackbar, { Variant } from './Snackbar';
 import AlertDialog from './Dialog';
 import moment from 'moment';
 
@@ -47,7 +47,7 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         calendarGraphData: defaultChartData,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
-        snackBarVariant: 'error',
+        snackBarVariant: 'error' as Variant,
         dialogOpen: false,
         dialogMsg: {title: '', message: ''},
         focusedInput: null as any
@@ -114,7 +114,7 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
             opt: MsgType.getCalEvents,
             data: { id,
                     start: start.getTime(),
-                end: end.getTime() }
+                    end: end.getTime() }
         });
         return data.map((_e: gapi.GCalendarEventFlat) => (
             gapi.GCalendarEvent.inflate(_e)

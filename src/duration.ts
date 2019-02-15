@@ -15,9 +15,9 @@ export class Duration {
         this.unit = unit
     }
 
-    isValid() { return moment.duration(this.value, this.unit).isValid(); }
+    isValid() { return moment.duration(parseInt(this.value), this.unit).isValid(); }
     toMoment() {
-        let m = moment.duration(this.value, this.unit);
+        let m = moment.duration(parseInt(this.value), this.unit);
         if (m.isValid()) return m;
         return null;
     }
