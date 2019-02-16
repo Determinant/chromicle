@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Theme, withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import cyan from '@material-ui/core/colors/cyan';
@@ -13,9 +12,10 @@ const styles = (theme: Theme) => ({
     }
 });
 
-function customizedLabel(props: {cx: number, cy: number,
-                                x: number, y: number,
-                                fill: string, name: string}) {
+function customizedLabel(props: {
+            cx: number, cy: number,
+            x: number, y: number,
+            fill: string, name: string}) {
     const {cx, cy, x, y, fill, name} = props;
     let anchor = "middle";
     const EPS = 2;
@@ -38,12 +38,15 @@ function customizedLabel(props: {cx: number, cy: number,
     return (<text x={x} y={y} dx={dx} dy={dy} fill={fill} textAnchor={anchor}>{`${name}`}</text>);
 }
 
-function PatternPieChart(props: {
-        classes: {
-            patternTableWrapper: string,
-            pieChart: string
-        },
-        data: PatternGraphData[] }) {
+type PatternPieChartProps = {
+    classes: {
+        patternTableWrapper: string,
+        pieChart: string
+    },
+    data: PatternGraphData[]
+};
+
+function PatternPieChart(props: PatternPieChartProps) {
     return (
           <Grid item xs={12} lg={6}>
             <div className={props.classes.patternTableWrapper}>
@@ -67,13 +70,16 @@ function PatternPieChart(props: {
 
 export const StyledPatternPieChart = withStyles(styles)(PatternPieChart);
 
-function DoublePieChart(props: {
+type DoublePieChartProps = {
     classes: {
         patternTableWrapper: string,
         pieChart: string
     },
     patternGraphData: PatternGraphData[],
-    calendarGraphData: PatternGraphData[] }) {
+    calendarGraphData: PatternGraphData[]
+};
+
+function DoublePieChart(props: DoublePieChartProps) {
     return (
     <Grid container spacing={0}>
       <StyledPatternPieChart data={props.patternGraphData} />

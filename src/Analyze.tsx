@@ -1,12 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import 'react-dates/initialize';
 import 'react-dates/lib/css/_datepicker.css';
-import { DateRangePicker } from 'react-dates';
+import { DateRangePicker, FocusedInputShape } from 'react-dates';
 import { Theme, withStyles } from '@material-ui/core/styles';
 import cyan from '@material-ui/core/colors/cyan';
 import deepOrange from '@material-ui/core/colors/deepOrange';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
@@ -14,15 +12,16 @@ import FormGroup from '@material-ui/core/FormGroup';
 import Grid from '@material-ui/core/Grid';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
+import moment from 'moment';
+
+import PatternTable from './PatternTable';
+import AlertDialog from './Dialog';
+import Snackbar, { SnackbarVariant } from './Snackbar';
 import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import { AnalyzePieChart } from './Chart';
 import { getGraphData } from './graph';
-import PatternTable from './PatternTable';
-import Snackbar, { Variant } from './Snackbar';
-import AlertDialog from './Dialog';
-import moment from 'moment';
 
 const defaultChartData = [
     {name: 'Work', value: 10, color: cyan[300]},
@@ -34,7 +33,11 @@ const styles = (theme: Theme) => ({
     },
 });
 
-class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
+type AnalyzeProps = {
+    classes: { buttonSpacer: string }
+};
+
+class Analyze extends React.Component<AnalyzeProps> {
     msgClient: MsgClient;
     dialogPromiseResolver: (r: boolean) => void;
 
@@ -47,13 +50,13 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         calendarGraphData: defaultChartData,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
-        snackBarVariant: 'error' as Variant,
+        snackBarVariant: 'error' as SnackbarVariant,
         dialogOpen: false,
         dialogMsg: {title: '', message: ''},
-        focusedInput: null as any
+        focusedInput: null as FocusedInputShape
     };
 
-    constructor(props: any) {
+    constructor(props: AnalyzeProps) {
         super(props);
 
         this.msgClient = new MsgClient('main');
@@ -75,12 +78,13 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         });
 
         gapi.getLoggedIn().then(b => !b &&
-            this.handleSnackbarOpen('Not logged in. Operating in offline mode.', 'warning'));
+            this.openSnackbar('Not logged in. Operating in offline mode.',
+                            'warning' as SnackbarVariant));
 
         this.dialogPromiseResolver = null;
     }
 
-    loadPatterns = (patterns: PatternEntry[]) => {
+    loadPatterns(patterns: PatternEntry[]) {
         this.msgClient.sendMsg({
             opt: MsgType.updatePatterns,
             data: { id: 'analyze', patterns: patterns.map(p => p.deflate()) }
@@ -109,7 +113,7 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         this.loadPatterns(patterns);
     };
 
-    getCalEvents = async (id: string, start: Date, end: Date): Promise<gapi.GCalendarEvent[]> => {
+    async getCalEvents(id: string, start: Date, end: Date): Promise<gapi.GCalendarEvent[]> {
         let { data } = await this.msgClient.sendMsg({
             opt: MsgType.getCalEvents,
             data: { id,
@@ -121,19 +125,20 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         ));
     }
 
-    analyze = () => {
+    analyze = async () => {
         if (!(this.state.startDate && this.state.endDate)) {
-            this.handleSnackbarOpen('Please choose a valid time range.', 'error');
+            this.openSnackbar('Please choose a valid time range.',
+                            'error' as SnackbarVariant);
             return;
         }
         let start = this.state.startDate.startOf('day').toDate();
         let end = this.state.endDate.startOf('day').toDate();
-        getGraphData(start, end,
+        let r = await getGraphData(start, end,
                     this.state.patterns,
                     this.state.calendars,
-                    this.getCalEvents).then(results => {
-            this.setState(results);
-        });
+                    this.getCalEvents);
+        this.setState({ patternGraphData: r.patternGraphData,
+                        calendarGraphData: r.calendarGraphData });
     }
 
     reset = () => {
@@ -155,23 +160,17 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
                 Pattern.anyPattern(),
                 cal.color));
         }
-        console.log(patterns);
         this.loadPatterns(patterns);
     }
 
-    default = () => {
+    loadDefault = () => {
         this.openDialog("Load Default", "Load the calendars as patterns?").then(ans => {
             if (!ans) return;
             this.loadDefaultPatterns();
         });
     }
 
-    handleSnackbarClose = (event: React.SyntheticEvent<{}>, reason: string) => {
-        if (reason === 'clickaway') return;
-        this.setState({ snackBarOpen: false });
-    }
-
-    handleSnackbarOpen = (msg: string, variant: any) => {
+    openSnackbar(msg: string, variant: SnackbarVariant) {
         this.setState({ snackBarOpen: true, snackBarMsg: msg, snackBarVariant: variant });
     }
 
@@ -179,12 +178,17 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
         let pm = new Promise(resolver => {
             this.dialogPromiseResolver = resolver
         });
-        this.setState({ dialogOpen: true, dialogMsg: {title, message} });
+        this.setState({ dialogOpen: true, dialogMsg: { title, message } });
         return pm;
     }
 
-    handleDialogClose = (result: boolean) => {
-        this.dialogPromiseResolver(result);
+    handleSnackbarClose = (event: React.SyntheticEvent<{}>, reason: string) => {
+        if (reason === 'clickaway') return;
+        this.setState({ snackBarOpen: false });
+    }
+
+    handleDialogClose = (ans: boolean) => {
+        this.dialogPromiseResolver(ans);
         this.setState({ dialogOpen: false });
     }
 
@@ -228,12 +232,9 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
                                     startDateId="start_date_id"
                                     endDate={this.state.endDate}
                                     endDateId="end_date_id"
-                                    onDatesChange={({ startDate, endDate }:
-                                                    { startDate: moment.Moment, endDate: moment.Moment }) => {
-                                        this.setState({ startDate, endDate });
-                                    }}
+                                    onDatesChange={({ startDate, endDate }) => this.setState({ startDate, endDate })}
                                     focusedInput={this.state.focusedInput}
-                                    onFocusChange={(focusedInput: any) => this.setState({ focusedInput })}
+                                    onFocusChange={focusedInput => this.setState({ focusedInput })}
                                     isOutsideRange={() => false} />
                             </div>
                         </FormGroup>
@@ -241,7 +242,7 @@ class Analyze extends React.Component<{classes: {buttonSpacer: string}}> {
                         <Grid container spacing={16}>
                             <Grid item md={4} xs={12}>
                                 <FormGroup>
-                                    <Button variant="contained" color="primary" onClick={this.default}>Load Default</Button>
+                                    <Button variant="contained" color="primary" onClick={this.loadDefault}>Load Default</Button>
                                 </FormGroup>
                             </Grid>
                             <Grid item md={4} xs={12}>

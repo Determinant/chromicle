@@ -3,6 +3,7 @@
 import LRU from "lru-cache";
 
 const gapiBase = 'https://www.googleapis.com/calendar/v3';
+let loggedIn: boolean = null;
 
 enum GApiError {
     invalidSyncToken = "invalidSyncToken",
@@ -11,23 +12,20 @@ enum GApiError {
     otherError = "otherError",
 }
 
-function to_params(dict: Object) {
+function toParams(dict: Object) {
     return Object.entries(dict).filter(([k, v] : string[]) => v)
         .map(([k, v]: string[]) => (
             `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
         )).join('&');
 }
 
-let loggedIn: boolean = null;
-
-function _getAuthToken(interactive = false): Promise<string> {
-    return new Promise(resolver =>
+async function _getAuthToken(interactive = false): Promise<string> {
+    let [token, ok]: [string, boolean] = await new Promise(resolver =>
         chrome.identity.getAuthToken(
-            { interactive }, token => resolver([token, !chrome.runtime.lastError])))
-            .then(([token, ok] : [string, boolean]) => {
-                if (ok) return token;
-                else throw GApiError.notLoggedIn;
-            });
+            { interactive },
+            token => resolver([token, !chrome.runtime.lastError])));
+    if (ok) return token;
+    else throw GApiError.notLoggedIn;
 }
 
 function _removeCachedAuthToken(token: string) {
@@ -35,35 +33,39 @@ function _removeCachedAuthToken(token: string) {
         chrome.identity.removeCachedAuthToken({ token }, () => resolver()));
 }
 
-export function getLoggedIn() {
+export async function getLoggedIn(): Promise<boolean> {
     if (loggedIn === null)
     {
-        return _getAuthToken(false)
-            .then(() => loggedIn = true)
-            .catch(() => loggedIn = false)
-            .then(() => loggedIn);
+        try {
+            await _getAuthToken(false);
+            loggedIn = true;
+        } catch(_) {
+            loggedIn = false;
+        }
     }
-    else return Promise.resolve(loggedIn);
+    return loggedIn;
 }
 
-export function getAuthToken(): Promise<string> {
-    return getLoggedIn().then(b => {
-        if (b) return _getAuthToken(false);
-        else throw GApiError.notLoggedIn;
-    });
+export async function getAuthToken(): Promise<string> {
+    let b = await getLoggedIn();
+    if (b) return _getAuthToken(false);
+    else throw GApiError.notLoggedIn;
 }
 
-export function login() {
-    return getLoggedIn().then(b => {
-        if (!b) return _getAuthToken(true).then(() => loggedIn = true);
-        else throw GApiError.notLoggedOut;
-    });
+export async function login(): Promise<void> {
+    let b = await getLoggedIn();
+    if (!b) {
+        await _getAuthToken(true);
+        loggedIn = true;
+    }
+    else throw GApiError.notLoggedOut;
 }
 
-export async function logout() {
+export async function logout(): Promise<void> {
     let token = await getAuthToken();
     let response = await fetch(
-        `https://accounts.google.com/o/oauth2/revoke?${to_params({ token })}`, { method: 'GET' });
+        `https://accounts.google.com/o/oauth2/revoke?${toParams({ token })}`,
+        { method: 'GET' });
     //if (response.status === 200)
     await _removeCachedAuthToken(token);
     //else throw GApiError.otherError;
@@ -82,19 +84,21 @@ export type GCalendarMeta = {
 
 export async function getCalendars(token: string): Promise<any> {
     let response = await fetch(
-        `${gapiBase}/users/me/calendarList?${to_params({access_token: token})}`, { method: 'GET' });
+        `${gapiBase}/users/me/calendarList?${toParams({access_token: token})}`,
+        { method: 'GET' });
     return (await response.json()).items;
 }
 
-export async function getColors(token: string) {
+export async function getColors(token: string): Promise<any> {
     let response = await fetch(
-        `${gapiBase}/colors?${to_params({access_token: token})}`, { method: 'GET' });
+        `${gapiBase}/colors?${toParams({access_token: token})}`,
+        { method: 'GET' });
     return response.json();
 }
 
-async function getEvent(calId: string, eventId: string, token: string) {
+async function getEvent(calId: string, eventId: string, token: string): Promise<any> {
     let response = await fetch(
-        `${gapiBase}/calendars/${calId}/events/${eventId}?${to_params({access_token: token})}`,
+        `${gapiBase}/calendars/${calId}/events/${eventId}?${toParams({access_token: token})}`,
         { method: 'GET' });
     return response.json();
 }
@@ -104,11 +108,11 @@ function getEvents(calId: string, token: string,
                 timeMin=null as string,
                 timeMax=null as string,
                 resultsPerRequest=100 as number):
-                Promise<{ results: any[], nextSyncToken: string }> {
+                    Promise<{ results: any[], nextSyncToken: string }> {
     let results = [] as any[];
     const singleFetch = async (pageToken: string, syncToken: string):
             Promise<{nextSyncToken: string, results: any[]}> => {
-        let response = await fetch(`${gapiBase}/calendars/${calId}/events?${to_params({
+        let response = await fetch(`${gapiBase}/calendars/${calId}/events?${toParams({
             access_token: token,
             pageToken,
             syncToken,

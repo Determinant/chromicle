@@ -57,6 +57,8 @@ export class TrackPeriod {
     }
 
     static inflate = (obj: TrackPeriodFlat) => (
-        new TrackPeriod(obj.name, Duration.inflate(obj.start), Duration.inflate(obj.end))
+        new TrackPeriod(obj.name,
+            Duration.inflate(obj.start),
+            Duration.inflate(obj.end))
     );
 }

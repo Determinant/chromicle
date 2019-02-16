@@ -1,19 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import 'typeface-roboto';
 import { Theme, withStyles, MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab, { TabProps } from '@material-ui/core/Tab';
 import { LinkProps } from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import { HashRouter as Router, RouteComponentProps, withRouter, Route, Link, Redirect, Switch } from "react-router-dom";
-import Logo from './Logo';
+
 import { theme } from './theme';
+import Logo from './Logo';
 import Analyze from './Analyze';
 import Settings from './Settings';
 
@@ -56,7 +55,6 @@ interface DashboardTabsProps extends RouteComponentProps {
     };
 }
 
-
 class DashboardTabs extends React.Component<DashboardTabsProps> {
     handleChangeTab = (event: React.SyntheticEvent<{}>, currentTab: any) => {
         this.props.history.push(currentTab);
@@ -93,7 +91,7 @@ class DashboardTabs extends React.Component<DashboardTabsProps> {
     }
 }
 
-class Dashboard extends React.Component<{}> {
+class Dashboard extends React.Component {
     render() {
         let Tabs = withRouter(withStyles(styles)(DashboardTabs));
         return (

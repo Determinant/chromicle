@@ -37,7 +37,7 @@ const styles = (theme: Theme) => ({
     },
 });
 
-export type Variant = 'error' | 'warning';
+export type SnackbarVariant = 'error' | 'warning';
 
 function CustomSnackbar(props: {
         classes: {
@@ -48,7 +48,7 @@ function CustomSnackbar(props: {
             iconVariant: string,
             close: string
         },
-        variant: Variant,
+        variant: SnackbarVariant,
         className?: string,
         open: boolean,
         message: string,

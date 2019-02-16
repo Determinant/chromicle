@@ -13,19 +13,21 @@ function Transition(props: any) {
     return <Slide direction="up" {...props} />;
 }
 
-function AlertDialog(props: {
-        open: boolean,
-        handleClose: (r: boolean) => any,
-        title: string,
-        message: string}) {
+type AlertDialogProps = {
+    open: boolean,
+    handleClose: (r: boolean) => any,
+    title: string,
+    message: string
+};
+
+function AlertDialog(props: AlertDialogProps) {
     return (
-        <Dialog
-            open={props.open}
-            TransitionComponent={Transition}
-            keepMounted
-            onClose={() => props.handleClose(false)}
-            aria-labelledby="alert-dialog-slide-title"
-            aria-describedby="alert-dialog-slide-description">
+        <Dialog open={props.open}
+                TransitionComponent={Transition}
+                keepMounted
+                onClose={() => props.handleClose(false)}
+                aria-labelledby="alert-dialog-slide-title"
+                aria-describedby="alert-dialog-slide-description">
             <DialogTitle id="alert-dialog-slide-title">
                 {props.title}
             </DialogTitle>
@@ -35,15 +37,14 @@ function AlertDialog(props: {
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-            <Button onClick={() => props.handleClose(false)} color="primary">
-                No
-            </Button>
-            <Button onClick={() => props.handleClose(true)} color="primary">
-                Yes
-            </Button>
-    </DialogActions>
-</Dialog>
-    );
+                <Button onClick={() => props.handleClose(false)} color="primary">
+                    No
+                </Button>
+                <Button onClick={() => props.handleClose(true)} color="primary">
+                    Yes
+                </Button>
+            </DialogActions>
+        </Dialog>);
 }
 
 export default AlertDialog;

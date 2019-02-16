@@ -22,7 +22,7 @@ let dirtyMetadata = false;
 function loadMetadata() {
     return new Promise(resolver => chrome.storage.local.get([
         'calendars', 'config', 'mainPatterns', 'analyzePatterns',
-    ], function(items) {
+    ], items => {
         if (chrome.runtime.lastError)
             console.error("error while loading saved metadata");
         else if (!items.hasOwnProperty('config'))
@@ -53,7 +53,7 @@ function saveMetadata() {
         },
         mainPatterns: mainPatterns.map(p => p.deflate()),
         analyzePatterns: analyzePatterns.map(p => p.deflate())
-    }, function() {
+    }, () => {
         console.log('metadata saved');
         resolver();
     }));
@@ -98,12 +98,12 @@ function updateMainGraphData() {
         pms.push(getGraphData(
             start.toDate(), end.toDate(), mainPatterns, calendars,
             getCalEvents
-        ).then(results => {
+        ).then(r => {
             mainGraphData[i] = {
                     name: p.name,
                     start: start.toDate(),
                     end: end.toDate(),
-                    data: results.patternGraphData
+                    data: r.patternGraphData
             };
         }));
     }

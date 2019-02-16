@@ -77,8 +77,9 @@ export class PatternEntry {
             Pattern.emptyPattern(),
             Pattern.anyPattern(), {background: null}));
 
-    static inflate = (obj: PatternEntryFlat) => new PatternEntry(
-        obj.name, obj.idx,
-        Pattern.inflate(obj.cal), Pattern.inflate(obj.event),
-        obj.color);
+    static inflate = (obj: PatternEntryFlat) => (
+        new PatternEntry(obj.name, obj.idx,
+            Pattern.inflate(obj.cal),
+            Pattern.inflate(obj.event), obj.color)
+    );
 }
