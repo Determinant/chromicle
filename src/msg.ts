@@ -52,7 +52,7 @@ export class Msg<T> {
 export class MsgClient {
     requestCallback: {
         ids: number[],
-        inFlight: {[id: number]: (msg: Msg<any>) => any; },
+        inFlight: {[id: number]: (msg: Msg<any>) => void; },
         maxId: number
     };
     port: chrome.runtime.Port;

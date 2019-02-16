@@ -1,19 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Theme, withStyles, MuiThemeProvider } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import Logo from './Logo';
-import Typography from '@material-ui/core/Typography';
-import { theme } from './theme';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { PatternEntry } from './pattern';
-import { Duration } from './duration';
-import { MsgType, MsgClient } from './msg';
-import { StyledPatternPieChart } from './Chart';
-import { GraphData } from './graph';
 import Divider from '@material-ui/core/Divider';
+
+import Logo from './Logo';
+import { theme } from './theme';
+import { StyledPatternPieChart } from './Chart';
+import { MsgType, MsgClient } from './msg';
+import { GraphData } from './graph';
 import moment from 'moment';
 
 function openOptions() {
@@ -35,19 +34,21 @@ const styles = (theme: Theme) => ({
     },
 });
 
-class Popup extends React.Component<{
-            classes: {
-                content: string,
-                buttons: string,
-                buttonSpacer: string
-            }
-        }> {
+type PopupProps = {
+    classes: {
+        content: string,
+        buttons: string,
+        buttonSpacer: string
+    }
+};
+
+class Popup extends React.Component<PopupProps> {
     msgClient: MsgClient;
     state = {
         patternGraphData: [] as GraphData[],
         loading: false,
     };
-    constructor(props: any) {
+    constructor(props: PopupProps) {
         super(props);
         this.msgClient = new MsgClient('main');
         this.state.loading = true;

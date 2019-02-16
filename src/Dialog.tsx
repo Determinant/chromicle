@@ -15,7 +15,7 @@ function Transition(props: any) {
 
 type AlertDialogProps = {
     open: boolean,
-    handleClose: (r: boolean) => any,
+    handleClose: (r: boolean) => void,
     title: string,
     message: string
 };

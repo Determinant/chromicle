@@ -26,7 +26,7 @@ import AlertDialog from './Dialog';
 import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
-import { Duration, TrackPeriod, TrackPeriodFlat } from './duration';
+import { Duration, TimeUnit, TrackPeriod, TrackPeriodFlat } from './duration';
 
 const styles = (theme: Theme): StyleRules => ({
     tableHead: {
@@ -67,13 +67,17 @@ type TrackedPeriodProps = {
 };
 
 class TrackedPeriod extends React.Component<TrackedPeriodProps> {
-    valueOnChange = (old: Duration, onChange: (d: Duration) => void) => (event: any) => {
-        onChange(new Duration(event.target.value, old.unit));
-    }
+    valueOnChange = (old: Duration, onChange: (d: Duration) => void) => (
+        (event: React.ChangeEvent<HTMLSelectElement>) => {
+            onChange(new Duration(event.target.value, old.unit));
+        }
+    );
 
-    unitOnChange = (old: Duration, onChange: (d: Duration) => void) => (event: any) => {
-        onChange(new Duration(old.value, event.target.value));
-    }
+    unitOnChange = (old: Duration, onChange: (d: Duration) => void) => (
+        (event: React.ChangeEvent<HTMLSelectElement>) => {
+            onChange(new Duration(old.value, event.target.value as TimeUnit));
+        }
+    );
 
     static styles = {
         periodName: {
@@ -450,6 +454,4 @@ class Settings extends React.Component<SettingsProps> {
     }
 }
 
-const StyledSettings = withStyles(styles)(Settings);
-
-export default StyledSettings;
+export default withStyles(styles)(Settings);

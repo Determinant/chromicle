@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Theme, withStyles } from '@material-ui/core/styles';
 import amber from '@material-ui/core/colors/amber';
@@ -39,21 +38,23 @@ const styles = (theme: Theme) => ({
 
 export type SnackbarVariant = 'error' | 'warning';
 
-function CustomSnackbar(props: {
-        classes: {
-            error: string,
-            warning: string,
-            message: string,
-            icon: string,
-            iconVariant: string,
-            close: string
-        },
-        variant: SnackbarVariant,
-        className?: string,
-        open: boolean,
+type CustomSnackbarProps = {
+    classes: {
+        error: string,
+        warning: string,
         message: string,
-        onClose: (event: React.SyntheticEvent<{}>, reason?: string) => void
-    }) {
+        icon: string,
+        iconVariant: string,
+        close: string
+    },
+    variant: SnackbarVariant,
+    className?: string,
+    open: boolean,
+    message: string,
+    onClose: (event: React.SyntheticEvent<{}>, reason?: string) => void
+};
+
+function CustomSnackbar(props: CustomSnackbarProps) {
     const { classes, className, message, variant, open, onClose } = props;
     const Icon = variantIcon[variant];
     return (

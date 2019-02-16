@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Theme, withStyles, withTheme, StyleRules } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Table from '@material-ui/core/Table';
@@ -11,6 +10,7 @@ import TablePagination from '@material-ui/core/TablePagination';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
 import Popover from '@material-ui/core/Popover';
 import MaterialColorPicker from 'react-material-color-picker';
+
 import { CalendarField, EventField } from './RegexField';
 import { theme, defaultChartColor } from './theme';
 import { PatternEntry, PatternEntryColor } from './pattern';
@@ -52,12 +52,14 @@ let nameFieldstyles = {
     }
 };
 
-function NameField(props: {
-        value: PatternEntry,
-        classes: { colorSample: string },
-        colorOnClick: (e: React.MouseEvent<HTMLDivElement>) => void,
-        onChange: (f: string, v: string) => void
-    }) {
+type NameFieldProps = {
+    value: PatternEntry,
+    classes: { colorSample: string },
+    colorOnClick: (e: React.MouseEvent<HTMLDivElement>) => void,
+    onChange: (f: string, v: string) => void
+};
+
+function NameField(props: NameFieldProps) {
     let color = props.value.color;
     return (
         <span>
@@ -72,25 +74,27 @@ function NameField(props: {
         </span>);
 }
 
-const patternHead = [
+const patternHead: {label: string, elem: any}[] = [
     {label: "Name", elem: withStyles(nameFieldstyles)(NameField)},
     {label: "Calendar", elem: withTheme()(CalendarField)},
-    {label: "Event", elem: withTheme()(EventField)}] as {label: string, elem: any}[];
+    {label: "Event", elem: withTheme()(EventField)}];
 
-class PatternTable extends React.Component<{
-            classes: {
-                deleteButton: string,
-                deleteButtonHide: string,
-                deleteButtonShow: string,
-                deleteIcon: string,
-                patternTableWrapper: string,
-                patternTable: string,
-            },
-            calendars: { [id: string]: GCalendarMeta },
-            patterns: PatternEntry[],
-            onRemovePattern: (idx: number) => void,
-            onUpdatePattern: (field: string, idx: number, value: any) => void
-        }> {
+type PatternTableProps = {
+    classes: {
+        deleteButton: string,
+        deleteButtonHide: string,
+        deleteButtonShow: string,
+        deleteIcon: string,
+        patternTableWrapper: string,
+        patternTable: string,
+    },
+    calendars: { [id: string]: GCalendarMeta },
+    patterns: PatternEntry[],
+    onRemovePattern: (idx: number) => void,
+    onUpdatePattern: (field: string, idx: number, value: any) => void
+};
+
+class PatternTable extends React.Component<PatternTableProps> {
 
     activeColorPattern: number;
     chosenColor: string;
@@ -103,20 +107,19 @@ class PatternTable extends React.Component<{
         colorPickerDefault: defaultChartColor
     };
 
-    handleChangePage = (event: React.MouseEvent<HTMLButtonElement>, page: number) => {
+    handleChangePage = (event: React.MouseEvent<{}>, page: number) => {
         this.setState({ page });
     }
 
-    handleChangeRowsPerPage = (event: any) => {
+    handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ rowsPerPage: event.target.value });
     }
 
     handleColorPickerClose = () => {
         this.setState({ colorPickerOpen: false });
-        this.activeColorPattern !== null &&
-            this.chosenColor &&
+        this.activeColorPattern !== null && this.chosenColor !== null &&
             this.props.onUpdatePattern('color', this.activeColorPattern,
-                {background: this.chosenColor})
+                { background: this.chosenColor });
     }
 
     render() {
@@ -147,7 +150,7 @@ class PatternTable extends React.Component<{
                                     value={p}
                                     calendars={calendars}
                                     onChange={(field: string, value: any) => this.props.onUpdatePattern(field, p.idx, value)}
-                                    colorOnClick={(event: any) => {
+                                    colorOnClick={(event: React.MouseEvent<{}>) => {
                                         this.activeColorPattern = p.idx;
                                         this.setState({
                                             anchorEl: event.currentTarget,
@@ -178,7 +181,7 @@ class PatternTable extends React.Component<{
                     }}>
                     <MaterialColorPicker
                         initColor={this.state.colorPickerDefault}
-                        onSelect={(event: { target: { value: any }}) => {
+                        onSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
                             console.log("select");
                             this.chosenColor = event.target.value;
                         }}
