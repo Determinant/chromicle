@@ -141,12 +141,11 @@ class Analyze extends React.Component<AnalyzeProps> {
                         calendarGraphData: r.calendarGraphData });
     }
 
-    reset = () => {
-        this.openDialog("Reset", "Are you sure to reset the patterns?").then(ans => {
-            if (!ans) return;
-            this.loadPatterns([]);
-            this.setState({ startDate: null, endDate: null });
-        });
+    reset = async () => {
+        let ans = this.openDialog("Reset", "Are you sure to reset the patterns?");
+        if (!ans) return;
+        this.loadPatterns([]);
+        this.setState({ startDate: null, endDate: null });
     }
 
     loadDefaultPatterns() {
@@ -163,11 +162,10 @@ class Analyze extends React.Component<AnalyzeProps> {
         this.loadPatterns(patterns);
     }
 
-    loadDefault = () => {
-        this.openDialog("Load Default", "Load the calendars as patterns?").then(ans => {
-            if (!ans) return;
-            this.loadDefaultPatterns();
-        });
+    loadDefault = async () => {
+        let ans = await this.openDialog("Load Default", "Load the calendars as patterns?");
+        if (!ans) return;
+        this.loadDefaultPatterns();
     }
 
     openSnackbar(msg: string, variant: SnackbarVariant) {

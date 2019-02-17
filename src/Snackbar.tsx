@@ -2,10 +2,12 @@ import React from 'react';
 import classNames from 'classnames';
 import { Theme, withStyles } from '@material-ui/core/styles';
 import amber from '@material-ui/core/colors/amber';
+import green from '@material-ui/core/colors/green';
 import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import ErrorIcon from '@material-ui/icons/Error';
 import WarningIcon from '@material-ui/icons/Warning';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CloseIcon from '@material-ui/icons/Close';
 import IconButton from '@material-ui/core/IconButton';
 
@@ -14,6 +16,7 @@ import IconButton from '@material-ui/core/IconButton';
 const variantIcon = {
     error: ErrorIcon,
     warning: WarningIcon,
+    success: CheckCircleIcon
 };
 
 const styles = (theme: Theme) => ({
@@ -22,6 +25,9 @@ const styles = (theme: Theme) => ({
     },
     warning: {
         backgroundColor: amber[700],
+    },
+    success: {
+        backgroundColor: green[600],
     },
     icon: {
         fontSize: 20,
@@ -36,12 +42,13 @@ const styles = (theme: Theme) => ({
     },
 });
 
-export type SnackbarVariant = 'error' | 'warning';
+export type SnackbarVariant = 'error' | 'warning' | 'success';
 
 type CustomSnackbarProps = {
     classes: {
         error: string,
         warning: string,
+        success: string,
         message: string,
         icon: string,
         iconVariant: string,

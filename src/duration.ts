@@ -31,13 +31,13 @@ export class Duration {
 }
 
 
-export type TrackPeriodFlat = {
+export type TrackedPeriodFlat = {
     name: string,
     start: DurationFlat,
     end: DurationFlat
 };
 
-export class TrackPeriod {
+export class TrackedPeriod {
     name: string;
     start: Duration;
     end: Duration;
@@ -56,8 +56,8 @@ export class TrackPeriod {
         };
     }
 
-    static inflate = (obj: TrackPeriodFlat) => (
-        new TrackPeriod(obj.name,
+    static inflate = (obj: TrackedPeriodFlat) => (
+        new TrackedPeriod(obj.name,
             Duration.inflate(obj.start),
             Duration.inflate(obj.end))
     );

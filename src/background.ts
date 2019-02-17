@@ -1,6 +1,6 @@
 import * as gapi from './gapi';
 import { MsgType, Msg } from './msg';
-import { Duration, TrackPeriod, TrackPeriodFlat } from './duration';
+import { Duration, TrackedPeriod, TrackedPeriodFlat } from './duration';
 import moment from 'moment';
 import { GraphData, getGraphData } from './graph';
 import { PatternEntry, PatternEntryFlat } from './pattern';
@@ -11,10 +11,10 @@ let calendars: {[id: string]: gapi.GCalendarMeta} = {};
 let calData: {[id: string]: gapi.GCalendar} = {};
 let config = {
     trackedPeriods: [
-        new TrackPeriod('Today', Duration.days(1), Duration.days(0)),
-        new TrackPeriod('Yesterday', Duration.days(2), Duration.days(1)),
-        new TrackPeriod('This Week', Duration.weeks(1), Duration.weeks(0)),
-        new TrackPeriod('This Month', Duration.months(1), Duration.months(0))] as TrackPeriod[]
+        new TrackedPeriod('Today', Duration.days(1), Duration.days(0)),
+        new TrackedPeriod('Yesterday', Duration.days(2), Duration.days(1)),
+        new TrackedPeriod('This Week', Duration.weeks(1), Duration.weeks(0)),
+        new TrackedPeriod('This Month', Duration.months(1), Duration.months(0))] as TrackedPeriod[]
 };
 let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
@@ -31,7 +31,7 @@ function loadMetadata() {
         {
             console.log('metadata loaded');
             config = {
-                trackedPeriods: items.config.trackedPeriods.map((p: TrackPeriodFlat) => TrackPeriod.inflate(p))
+                trackedPeriods: items.config.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p))
             };
             calendars = items.calendars;
             mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
@@ -45,11 +45,7 @@ function saveMetadata() {
     return new Promise(resolver => chrome.storage.local.set({
         calendars,
         config: {
-            trackedPeriods: config.trackedPeriods.map(p => ({
-                name: p.name,
-                start: p.start.deflate(),
-                end: p.end.deflate()
-            }))
+            trackedPeriods: config.trackedPeriods.map(p => p.deflate())
         },
         mainPatterns: mainPatterns.map(p => p.deflate()),
         analyzePatterns: analyzePatterns.map(p => p.deflate())
@@ -174,11 +170,7 @@ chrome.runtime.onConnect.addListener(function(port) {
             break;
         }
         case MsgType.updateConfig: {
-            config.trackedPeriods = msg.data.trackedPeriods.map((p: TrackPeriodFlat) => ({
-                name: p.name,
-                start: Duration.inflate(p.start),
-                end: Duration.inflate(p.end)
-            }));
+            config.trackedPeriods = msg.data.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p));
             dirtyMetadata = true;
             port.postMessage(msg.genResp(null));
             break;
