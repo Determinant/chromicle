@@ -19,13 +19,29 @@ let config = {
 let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
 
-function loadMetadata() {
-    return new Promise(resolver => chrome.storage.local.get([
-        'calendars', 'config', 'mainPatterns', 'analyzePatterns',
-    ], items => {
-        if (chrome.runtime.lastError)
-            console.error("error while loading saved metadata");
-        else if (!items.hasOwnProperty('config'))
+enum ChromeError {
+    storageGetError = "storageGetError",
+    storageSetError = "storageSetError"
+}
+
+const chromeStorageGet = (keys: string[]): Promise<any> => (
+    new Promise(resolver => chrome.storage.local.get(keys, items => {
+        if (chrome.runtime.lastError) throw ChromeError.storageGetError;
+        resolver(items);
+    }))
+);
+
+const chromeStorageSet = (obj: {[key: string]: any}): Promise<void> => (
+    new Promise(resolver => chrome.storage.local.set(obj, () => {
+        if (chrome.runtime.lastError) throw ChromeError.storageSetError;
+        resolver();
+    }))
+);
+
+async function loadMetadata() {
+    try {
+        let items = await chromeStorageGet(['calendars', 'config', 'mainPatterns', 'analyzePatterns']);
+        if (!items.hasOwnProperty('config'))
             console.log("no saved metadata");
         else
         {
@@ -37,22 +53,24 @@ function loadMetadata() {
             mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
             analyzePatterns = items.analyzePatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
         }
-        resolver();
-    }));
+    } catch (_) {
+        console.error("error while loading saved metadata");
+    }
 }
 
-function saveMetadata() {
-    return new Promise(resolver => chrome.storage.local.set({
+async function saveMetadata() {
+    await chromeStorageSet({
         calendars,
         config: {
             trackedPeriods: config.trackedPeriods.map(p => p.deflate())
         },
         mainPatterns: mainPatterns.map(p => p.deflate()),
         analyzePatterns: analyzePatterns.map(p => p.deflate())
-    }, () => {
-        console.log('metadata saved');
-        resolver();
-    }));
+    });
+    console.log('metadata saved');
+}
+
+async function saveCachedCals() {
 }
 
 async function getCalEvents(id: string, start: Date, end: Date) {
@@ -116,9 +134,7 @@ async function pollSync() {
     ));
 }
 
-loadMetadata().then(() => pollSync());
-
-chrome.runtime.onConnect.addListener(function(port) {
+function handleMsg(port: chrome.runtime.Port) {
     console.assert(port.name == 'main');
     port.onMessage.addListener(_msg => {
         let msg = Msg.inflate<any>(_msg);
@@ -185,17 +201,27 @@ chrome.runtime.onConnect.addListener(function(port) {
             break;
         }
         case MsgType.getGraphData: {
-            (msg.data.sync ? updateMainGraphData().then(() => {}) : Promise.resolve()).then(() => (
+            (async () => {
+                await (msg.data.sync ? updateMainGraphData().then(() => {}) : Promise.resolve());
+                if (mainGraphData.length === 0)
+                    await updateMainGraphData();
                 port.postMessage(msg.genResp(mainGraphData.map(d => ({
                     name: d.name,
                     start: d.start.toISOString(),
                     end: d.end.toISOString(),
                     data: d.data
-                }))))
-            ));
+                }))));
+            })();
             break;
         }
         default: console.error("unknown msg opt");
         }
     });
-});
+}
+
+(async () => {
+    await loadMetadata();
+    pollSync();
+})();
+
+chrome.runtime.onConnect.addListener(handleMsg);

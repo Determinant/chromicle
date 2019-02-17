@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Theme, withStyles, MuiThemeProvider } from '@material-ui/core/styles';
+import { Theme, withStyles, StyleRules, MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import Divider from '@material-ui/core/Divider';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Logo from './Logo';
 import { theme } from './theme';
@@ -19,7 +20,7 @@ function openOptions() {
     chrome.tabs.create({ url: "index.html" });
 }
 
-const styles = (theme: Theme) => ({
+const styles = (theme: Theme): StyleRules => ({
     content: {
         padding: theme.spacing.unit * 1,
         overflow: 'auto',
@@ -32,13 +33,17 @@ const styles = (theme: Theme) => ({
     buttonSpacer: {
         marginBottom: theme.spacing.unit * 2,
     },
+    loading: {
+        textAlign: 'center'
+    }
 });
 
 type PopupProps = {
     classes: {
         content: string,
         buttons: string,
-        buttonSpacer: string
+        buttonSpacer: string,
+        loading: string
     }
 };
 
@@ -92,6 +97,7 @@ class Popup extends React.Component<PopupProps> {
             </div>
             <div className={classes.buttonSpacer} />
             {
+                (data.length > 0 &&
                 data.map((d, idx) => (
                     <div key={idx}>
                     <Typography variant="subtitle1" align="center" color="textPrimary">
@@ -104,11 +110,13 @@ class Popup extends React.Component<PopupProps> {
                     {(d.data.some(dd => dd.value > 1e-3) &&
                     <StyledPatternPieChart data={d.data} />) ||
                     <Typography variant="subtitle1" align="center" color="textSecondary">
-                        No data available
+                        No matching events.
                     </Typography>}
                     {idx + 1 < data.length && <Divider />}
                     </div>
-                ))
+                ))) || (
+                    <div className={classes.loading}><CircularProgress color="primary" /></div>
+                )
             }
             </main>
             </MuiThemeProvider>
