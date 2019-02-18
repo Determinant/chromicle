@@ -18,6 +18,8 @@ let config = {
 };
 let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
+let dirtyCalData = false;
+let loadPromise: Promise<void> = null;
 
 enum ChromeError {
     storageGetError = "storageGetError",
@@ -45,13 +47,13 @@ async function loadMetadata() {
             console.log("no saved metadata");
         else
         {
-            console.log('metadata loaded');
             config = {
                 trackedPeriods: items.config.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p))
             };
             calendars = items.calendars;
             mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
             analyzePatterns = items.analyzePatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
+            console.log('metadata loaded');
         }
     } catch (_) {
         console.error("error while loading saved metadata");
@@ -70,16 +72,53 @@ async function saveMetadata() {
     console.log('metadata saved');
 }
 
+async function loadCachedCals() {
+    try {
+        let items = await chromeStorageGet(['calData']);
+        if (!items.hasOwnProperty('calData'))
+            console.log("no cached cals");
+        else
+        {
+            let calDataFlat: {[id: string]: gapi.GCalendarFlat} = items.calData;
+            console.log(calDataFlat);
+            for (let id in calDataFlat) {
+                calData[id] = gapi.GCalendar.inflate(calDataFlat[id]);
+            }
+            console.log("cached cals loaded");
+        }
+    } catch (e) {
+        console.log(e);
+        console.error("error while loading cached cals");
+    }
+}
+
 async function saveCachedCals() {
+    let calDataFlat: {[id: string]: gapi.GCalendarFlat} = {};
+    for (let id in calData) {
+        if (!(calendars.hasOwnProperty(id) &&
+            calendars[id].enabled)) continue;
+        calDataFlat[id] = calData[id].deflate();
+    }
+    try {
+        await chromeStorageSet({ calData: calDataFlat });
+        console.log('cached data saved');
+    } catch (_) {
+        console.log("failed to save cached data");
+    }
+}
+
+function getCalData(id: string) {
+    if (!calData.hasOwnProperty(id))
+        calData[id] = new gapi.GCalendar(id, calendars[id].name);
+    return calData[id];
 }
 
 async function getCalEvents(id: string, start: Date, end: Date) {
-    if (!calData.hasOwnProperty(id))
-        calData[id] = new gapi.GCalendar(id, calendars[id].name);
+    let gcal = getCalData(id);
     try {
-        let res = await calData[id].getEvents(new Date(start), new Date(end));
-        console.log(res);
-        return res;
+        let res = await gcal.getEvents(new Date(start), new Date(end));
+        dirtyCalData = res.changed;
+        return res.events;
     } catch(err) {
         console.log(`cannot load calendar ${id}`, err);
         calendars[id].enabled = false;
@@ -126,9 +165,23 @@ function updateMainGraphData() {
 
 async function pollSync() {
     console.log('poll');
+    /* sync all enabled calendars */
+    let pms = [];
+    for (let id in calendars) {
+        if (!calendars[id].enabled) continue;
+        pms.push(getCalData(id).sync());
+    }
+    await Promise.all(pms);
+    /* update the tracked graph data */
     await updateMainGraphData();
+    pms = [];
+    /* save the storage if state is changed */
     if (dirtyMetadata)
-        await saveMetadata().then(() => dirtyMetadata = false);
+        pms.push(saveMetadata().then(() => dirtyMetadata = false));
+    if (dirtyCalData)
+        pms.push(saveCachedCals().then(() => dirtyCalData = false));
+    await Promise.all(pms);
+    /* setup the next loop */
     return new Promise(resolver => (
         window.setTimeout(() => { resolver(); pollSync();}, 10000)
     ));
@@ -204,7 +257,10 @@ function handleMsg(port: chrome.runtime.Port) {
             (async () => {
                 await (msg.data.sync ? updateMainGraphData().then(() => {}) : Promise.resolve());
                 if (mainGraphData.length === 0)
+                {
+                    await loadPromise;
                     await updateMainGraphData();
+                }
                 port.postMessage(msg.genResp(mainGraphData.map(d => ({
                     name: d.name,
                     start: d.start.toISOString(),
@@ -219,8 +275,8 @@ function handleMsg(port: chrome.runtime.Port) {
     });
 }
 
-(async () => {
-    await loadMetadata();
+loadPromise = (async () => {
+    await Promise.all([loadMetadata(), loadCachedCals()]);
     pollSync();
 })();
 

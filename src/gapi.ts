@@ -147,15 +147,39 @@ export type GCalendarOptions = {
     largeQuery: number
 };
 
-type Event = {
-    start: Date,
-    end: Date,
+type EventFlat = {
+    start: number,
+    end: number,
     id: string
 };
 
+class Event {
+    start: Date;
+    end: Date;
+    id: string;
+
+    constructor(start: Date, end: Date, id: string) {
+        this.start = start;
+        this.end = end;
+        this.id = id;
+    }
+
+    deflate() {
+        return {
+            start: this.start.getTime(),
+            end: this.end.getTime(),
+            id: this.id
+        };
+    }
+
+    static inflate = (obj: EventFlat) => (
+        new Event(new Date(obj.start), new Date(obj.end), obj.id)
+    );
+}
+
 export type GCalendarEventFlat = {
-    start: string,
-    end: string,
+    start: number,
+    end: number,
     id: string,
     summary: string
 };
@@ -175,8 +199,8 @@ export class GCalendarEvent {
 
     deflate() {
         return {
-            start: this.start.toISOString(),
-            end: this.end.toISOString(),
+            start: this.start.getTime(),
+            end: this.end.getTime(),
             id: this.id,
             summary: this.summary
         };
@@ -188,6 +212,17 @@ export class GCalendarEvent {
 }
 
 type GCalendarSlot = { [id: string]: Event };
+type GCalendarSlotFlat = { [id: string]: EventFlat };
+
+export type GCalendarFlat = {
+    calId: string,
+    name: string,
+    syncToken: string,
+    cache: {k: number, v: GCalendarSlotFlat, e: number}[],
+    eventMeta: { [id: string]: { keys: number[], summary: string } },
+    options: GCalendarOptions,
+    divider: number
+};
 
 export class GCalendar {
     calId: string;
@@ -210,6 +245,53 @@ export class GCalendar {
         this.eventMeta = {};
         this.options = options;
         this.divider = 8.64e7 * this.options.nDaysPerSlot;
+    }
+
+    deflate() {
+        let cache = this.cache.dump().map(t => {
+            let slot: GCalendarSlotFlat = {};
+            for (let id in t.v)
+                slot[id] = t.v[id].deflate();
+            return { k: t.k, v: slot, e: t.e };
+        });
+
+        let eventMeta: { [id: string]: { keys: number[], summary: string } } = {};
+        for (let id in this.eventMeta) {
+            let m = this.eventMeta[id];
+            eventMeta[id] = { keys: Array.from(m.keys), summary: m.summary };
+        }
+
+        return {
+            calId: this.calId,
+            name: this.name,
+            syncToken: this.syncToken,
+            cache,
+            eventMeta,
+            options: this.options,
+            divider: this.divider
+        }
+    }
+
+    static inflate(obj: GCalendarFlat) {
+        let cache = obj.cache.map(t => {
+            let slot: GCalendarSlot = {};
+            for (let id in t.v)
+                slot[id] = Event.inflate(t.v[id]);
+            return { k: t.k, v: slot, e: t.e };
+        });
+
+        let eventMeta: { [id: string]: { keys: Set<number>, summary: string } } = {};
+        for (let id in obj.eventMeta) {
+            let m = obj.eventMeta[id];
+            eventMeta[id] = { keys: new Set(m.keys), summary: m.summary };
+        }
+
+        let gcal = new GCalendar(obj.calId, obj.name, obj.options);
+        gcal.syncToken = obj.syncToken;
+        gcal.cache.load(cache);
+        gcal.eventMeta = eventMeta;
+        gcal.divider = obj.divider;
+        return gcal;
     }
 
     get token() { return getAuthToken(); }
@@ -268,25 +350,13 @@ export class GCalendar {
         };
         if (!evict && t > this.options.maxCachedItems) return;
         if (ks === ke)
-            this.getSlot(ks)[e.id] = {
-                start: e.start,
-                end: e.end,
-                id: e.id };
+            this.getSlot(ks)[e.id] = new Event(e.start, e.end, e.id);
         else
         {
-            this.getSlot(ks)[e.id] = {
-                start: e.start,
-                end: this.slotEndDate(ks),
-                id: e.id };
-            this.getSlot(ke)[e.id] = {
-                start: this.slotStartDate(ke),
-                end: e.end,
-                id: e.id };
+            this.getSlot(ks)[e.id] = new Event(e.start, this.slotEndDate(ks), e.id);
+            this.getSlot(ke)[e.id] = new Event(this.slotStartDate(ke), e.end, e.id);
             for (let k = ks + 1; k < ke; k++)
-                this.getSlot(k)[e.id] = {
-                    start: this.slotStartDate(k),
-                    end: this.slotEndDate(k),
-                    id: e.id};
+                this.getSlot(k)[e.id] = new Event(this.slotStartDate(k), this.slotEndDate(k), e.id);
         }
     }
 
@@ -357,7 +427,7 @@ export class GCalendar {
         }
     }
 
-    async getEvents(start: Date, end: Date): Promise<GCalendarEvent[]> {
+    async getEvents(start: Date, end: Date, sync = false): Promise<{ events: GCalendarEvent[], changed: boolean }> {
         let r = this.dateRangeToCacheKeys({ start, end });
         let query = {
             start: null as number,
@@ -379,7 +449,7 @@ export class GCalendar {
                 let token = await this.token;
                 let r = await getEvents(this.calId, token, null,
                                         start.toISOString(), end.toISOString());
-                return r.results.map(e => {
+                let events = r.results.map(e => {
                     console.assert(e.start);
                     e.start = new Date(e.start.dateTime);
                     e.end = new Date(e.end.dateTime);
@@ -391,6 +461,7 @@ export class GCalendar {
                         e.id,
                         e.summary)
                 ));
+                return { events, changed: false };
             }
 
             console.log(`fetching short event list`);
@@ -409,14 +480,16 @@ export class GCalendar {
             });
             if (this.syncToken === '')
                 this.syncToken = r.nextSyncToken;
-            await this.sync();
-            return this.getCachedEvents({ start, end });
+            if (sync) await this.sync();
+            let events = await this.getCachedEvents({ start, end });
+            return { events, changed: true };
         }
         else
         {
             console.log(`cache hit`);
-            await this.sync();
-            return this.getCachedEvents({ start, end });
+            if (sync) await this.sync();
+            let events = await this.getCachedEvents({ start, end });
+            return { events, changed: false };
         }
     }
 }
