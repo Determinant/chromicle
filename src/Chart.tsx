@@ -2,7 +2,7 @@ import React from 'react';
 import { Theme, withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import cyan from '@material-ui/core/colors/cyan';
-import { PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { ResponsivePie } from '@nivo/pie';
 import { defaultChartColor } from './theme';
 import { PatternGraphData } from './graph';
 
@@ -12,59 +12,55 @@ const styles = (theme: Theme) => ({
     }
 });
 
-function customizedLabel(props: {
-            cx: number, cy: number,
-            x: number, y: number,
-            fill: string, name: string}) {
-    const {cx, cy, x, y, fill, name} = props;
-    let anchor = "middle";
-    const EPS = 2;
-    let dx = 0;
-    let dy = 0;
-    if (x < cx - EPS) {
-        dx = -5;
-        anchor = "end"
-    } else if (x > cx + EPS) {
-        dx = 5;
-        anchor = "start";
-    }
-
-    if (y < cy - EPS) {
-        dy = -5;
-    } else if (y > cy + EPS) {
-        dy = 10;
-    }
-
-    return (<text x={x} y={y} dx={dx} dy={dy} fill={fill} textAnchor={anchor}>{`${name}`}</text>);
-}
-
 type PatternPieChartProps = {
     classes: {
         patternTableWrapper: string,
         pieChart: string
     },
+    height?: number,
     data: PatternGraphData[]
 };
 
 function PatternPieChart(props: PatternPieChartProps) {
     return (
-          <Grid item xs={12} lg={6}>
-            <div className={props.classes.patternTableWrapper}>
-            <PieChart width={400} height={250} className={props.classes.pieChart}>
-              <Pie data={props.data}
-                   dataKey='value'
-                   cx={200}
-                   cy={125}
-                   outerRadius={60}
-                   fill={defaultChartColor}
-                   isAnimationActive={false}
-                   label={customizedLabel}>
-              {props.data.map((d, i) => <Cell key={i} fill={d.color ? d.color: defaultChartColor}/>)}
-              </Pie>
-              <Tooltip formatter={(value: number) => `${value.toFixed(2)} hr`}/>
-            </PieChart>
+        <Grid item xs={12} lg={6}>
+            <div style={{height: (props.height ? props.height : 300)}}>
+                <ResponsivePie
+                data={props.data.map(p => ({
+                    id: p.name,
+                    label: p.name,
+                    value: p.value,
+                    color: p.color ? p.color: defaultChartColor
+                }))}
+                margin={{
+                    top: 40,
+                    right: 80,
+                    bottom: 40,
+                    left: 80
+                }}
+                innerRadius={0.5}
+                padAngle={0.7}
+                cornerRadius={3}
+                colorBy={d => d.color as string}
+                borderWidth={1}
+                borderColor="inherit:darker(0.2)"
+                radialLabelsSkipAngle={10}
+                radialLabelsTextXOffset={6}
+                radialLabelsTextColor="#333333"
+                radialLabelsLinkOffset={0}
+                radialLabelsLinkDiagonalLength={16}
+                radialLabelsLinkHorizontalLength={24}
+                radialLabelsLinkStrokeWidth={1}
+                radialLabelsLinkColor="inherit"
+                sliceLabel={(d) => `${d.value.toFixed(2)} hr`}
+                slicesLabelsSkipAngle={10}
+                slicesLabelsTextColor="#ffffff"
+                animate={true}
+                motionStiffness={90}
+                motionDamping={15}
+                tooltipFormat={v => `${v.toFixed(2)} hr`} />
             </div>
-          </Grid>
+        </Grid>
     );
 }
 
@@ -82,25 +78,8 @@ type DoublePieChartProps = {
 function DoublePieChart(props: DoublePieChartProps) {
     return (
     <Grid container spacing={0}>
-      <StyledPatternPieChart data={props.patternGraphData} />
-      <Grid item xs={12} lg={6}>
-        <div className={props.classes.patternTableWrapper}>
-        <PieChart width={400} height={250} className={props.classes.pieChart}>
-          <Pie data={props.calendarGraphData}
-               dataKey='value'
-               cx={200}
-               cy={125}
-               innerRadius={40}
-               outerRadius={70}
-               fill={cyan[300]}
-               isAnimationActive={false}
-               label={customizedLabel}>
-            {props.calendarGraphData.map((d, i) => <Cell key={i} fill={d.color ? d.color : cyan[300]}/>)}
-          </Pie>
-          <Tooltip formatter={(value: number) => `${value.toFixed(2)} hr`}/>
-        </PieChart>
-        </div>
-      </Grid>
+      <StyledPatternPieChart data={props.patternGraphData} height={300} />
+      <StyledPatternPieChart data={props.calendarGraphData} height={300} />
     </Grid>);
 }
 

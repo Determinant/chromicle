@@ -113,7 +113,7 @@ class Analyze extends React.Component<AnalyzeProps> {
         this.loadPatterns(patterns);
     };
 
-    async getCalEvents(id: string, start: Date, end: Date): Promise<gapi.GCalendarEvent[]> {
+    getCalEvents = async (id: string, start: Date, end: Date): Promise<gapi.GCalendarEvent[]> => {
         let { data } = await this.msgClient.sendMsg({
             opt: MsgType.getCalEvents,
             data: { id,
