@@ -10,6 +10,7 @@ import Grid from '@material-ui/core/Grid';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Logo from './Logo';
+import Donut from './Donut';
 import { theme } from './theme';
 import { StyledPatternPieChart } from './Chart';
 import { MsgType, MsgClient } from './msg';
@@ -116,11 +117,29 @@ class Tab extends React.Component<TabProps> {
                         radialLabelsLinkDiagonalLength={40}
                         labelFontSize={14}
                         padAngle={0.8} />
-                    </div>
-                    ) ||
-                    <Typography variant="subtitle1" align="center" color="textSecondary">
-                        No matching events.
-                    </Typography>}
+                    </div>) ||
+                    <div style={{
+                        height: 250,
+                        marginLeft: 100,
+                        marginRight: 100,
+                        marginTop: 60,
+                        marginBottom: 60,
+                        textAlign: 'center',
+                        position: 'relative'
+                    }}>
+                        <Donut style={{
+                            height: '100%'
+                        }} />
+                        <div style={{
+                            position: 'absolute',
+                            top: -40,
+                            left: 83,
+                        }}>
+                            <Typography variant="subtitle1" align="center" color="textSecondary">
+                                No matching events.
+                            </Typography>
+                        </div>
+                    </div>}
                     </Grid>
                 ))) || (
                     <div className={classes.loading}><CircularProgress color="primary" /></div>
