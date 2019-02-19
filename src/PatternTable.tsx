@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import { Theme, withStyles, withTheme, StyleRules } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Table from '@material-ui/core/Table';
@@ -20,17 +21,19 @@ const styles = (theme: Theme): StyleRules => ({
     deleteButton: {
         width: 0,
         position: 'absolute',
-        marginRight: '2em',
+        paddingRight: '24px',
         right: 0,
-        height: 48,
+        lineHeight: '48px',
     },
     deleteButtonHide: {
         display: 'none'
     },
-    deleteButtonShow: {},
+    deleteButtonShow: {
+        backgroundColor: theme.palette.background.default,
+        zIndex: 1
+    },
     deleteIcon: {
         position: 'absolute',
-        height: '100%',
         cursor: 'pointer'
     },
     patternTableWrapper: {
@@ -62,7 +65,7 @@ type NameFieldProps = {
 function NameField(props: NameFieldProps) {
     let color = props.value.color.background;
     return (
-        <span>
+        <div style={{minWidth: 250}}>
             <div
                 className={props.classes.colorSample}
                 style={{backgroundColor: (color ? color : defaultChartColor)}}
@@ -71,7 +74,7 @@ function NameField(props: NameFieldProps) {
             <TextField
                 value={props.value.name}
                 onChange={event => props.onChange('name', event.target.value)} />
-        </span>);
+        </div>);
 }
 
 const patternHead: {label: string, elem: any}[] = [
@@ -133,11 +136,11 @@ class PatternTable extends React.Component<PatternTableProps> {
                 onMouseOver={setActive} onMouseOut={unsetActive}
                 className={classes.deleteButton}>
                 <td>
-                    <span className={this.state.activePattern !== p.idx ? classes.deleteButtonHide : classes.deleteButtonShow}>
+                    <div className={classNames(this.state.activePattern !== p.idx ? classes.deleteButtonHide : classes.deleteButtonShow, classes.deleteIcon)}>
                     <DeleteOutlinedIcon
-                        className={classes.deleteIcon}
+                        style={{verticalAlign: 'middle'}}
                         onClick={() => this.props.onRemovePattern(p.idx)} />
-                    </span>
+                    </div>
                 </td>
             </TableRow>,
             <TableRow key={i * 2 + 1} onMouseOver={setActive} onMouseOut={unsetActive}>
@@ -152,6 +155,7 @@ class PatternTable extends React.Component<PatternTableProps> {
                                     onChange={(field: string, value: any) => this.props.onUpdatePattern(field, p.idx, value)}
                                     colorOnClick={(event: React.MouseEvent<{}>) => {
                                         this.activeColorPattern = p.idx;
+                                        console.log(p.color.background);
                                         this.setState({
                                             anchorEl: event.currentTarget,
                                             colorPickerDefault: p.color.background,
@@ -165,7 +169,7 @@ class PatternTable extends React.Component<PatternTableProps> {
         rows.flat();
 
         return (
-            <div>
+            <div style={{width: '100%', position: 'relative'}}>
                 <Popover
                     id="colorPicker"
                     open={this.state.colorPickerOpen}
@@ -207,7 +211,6 @@ class PatternTable extends React.Component<PatternTableProps> {
                             }
                         </TableBody>
                     </Table>
-                </div>
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
@@ -218,6 +221,7 @@ class PatternTable extends React.Component<PatternTableProps> {
                     nextIconButtonProps={{'aria-label': 'Next Page'}}
                     onChangePage={this.handleChangePage}
                     onChangeRowsPerPage={this.handleChangeRowsPerPage} />
+                </div>
             </div>);
     }
 }

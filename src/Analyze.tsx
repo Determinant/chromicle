@@ -194,7 +194,7 @@ class Analyze extends React.Component<AnalyzeProps> {
         const { classes } = this.props;
 
         return (
-            <Grid container  spacing={16}>
+            <Grid container spacing={16}>
                 <AlertDialog
                     title={this.state.dialogMsg.title}
                     message={this.state.dialogMsg.message}
@@ -205,9 +205,8 @@ class Analyze extends React.Component<AnalyzeProps> {
                     open={this.state.snackBarOpen}
                     variant={this.state.snackBarVariant}
                     onClose={this.handleSnackbarClose}/>
-                <Grid item md={6} xs={12}>
-                    <FormControl fullWidth={true}>
-                        <FormGroup>
+                <Grid item container md={6} xs={12} spacing={16}>
+                    <Grid item xs={12}>
                             <Typography variant="h6" component="h1" gutterBottom>
                                 Analyzed Events
                                 <IconButton
@@ -219,11 +218,13 @@ class Analyze extends React.Component<AnalyzeProps> {
                                 calendars={this.state.calendars}
                                 onRemovePattern={this.removePattern}
                                 onUpdatePattern={this.updatePattern} />
-                        </FormGroup>
-                        <FormGroup>
+                    </Grid>
+                    <Grid item xs={12}>
                             <Typography variant="h6" component="h1" gutterBottom>
                                 Time Range
                             </Typography>
+                        <FormControl fullWidth={true}>
+                        <FormGroup>
                             <div style={{textAlign: 'center'}}>
                                 <DateRangePicker
                                     startDate={this.state.startDate}
@@ -254,7 +255,8 @@ class Analyze extends React.Component<AnalyzeProps> {
                                 </FormGroup>
                             </Grid>
                         </Grid>
-                    </FormControl>
+                        </FormControl>
+                    </Grid>
                 </Grid>
                 <Grid item md={6} xs={12}>
                     <Typography variant="h6" component="h1" gutterBottom>

@@ -20,6 +20,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import { getColorFamily } from 'materialcolorize'
 
 import PatternTable from './PatternTable';
 import Snackbar, { SnackbarVariant } from './Snackbar';
@@ -30,14 +31,21 @@ import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import { DurationFlat, TrackedPeriodFlat } from './duration';
 
 const styles = (theme: Theme): StyleRules => ({
+    patternTable: {
+        marginLeft: -24
+    },
     tableHead: {
         verticalAlign: 'top',
         textAlign: 'right',
         lineHeight: '3em',
+        minWidth: 250
     },
     tableContent: {
         textAlign: 'left',
-        maxWidth: 600,
+        maxWidth: 400,
+    },
+    list: {
+        marginLeft: -12
     },
     calendarList: {
         maxHeight: 400,
@@ -45,11 +53,13 @@ const styles = (theme: Theme): StyleRules => ({
     },
     bottomButtons: {
         marginTop: 10,
-        textAlign: 'right'
+        textAlign: 'right',
+        minWidth: 600
     },
     trackedPeriodInput: {
         paddingTop: 10,
-        paddingBottom: 10
+        paddingBottom: 20,
+        overflowX: 'auto'
     }
 });
 
@@ -149,7 +159,9 @@ type SettingsProps = {
         tableContent: string,
         calendarList: string,
         bottomButtons: string,
-        trackedPeriodInput: string
+        trackedPeriodInput: string,
+        list: string,
+        patternTable: string
     }
 };
 
@@ -244,9 +256,12 @@ class Settings extends React.Component<SettingsProps> {
         let [colors, _cals] = await Promise.all([pm_colors, pm_cals]);
         var cals: { [id: string]: gapi.GCalendarMeta } = {};
         _cals.forEach((cal: any) => {
+            let _color = colors[cal.colorId];
             cals[cal.id] = {
                 name: cal.summary,
-                color: colors[cal.colorId],
+                color: {
+                    background: ('#' + getColorFamily(_color.background)[300]).toLowerCase()
+                },
                 enabled: true
             };
         });
@@ -429,7 +444,7 @@ class Settings extends React.Component<SettingsProps> {
                            </STableCell>
                            <STableCell className={classes.tableContent}>
                                {(this.state.isLoggedIn &&
-                               <List className={classes.calendarList}>
+                               <List className={classNames(classes.calendarList, classes.list)} disablePadding>
                                    {Object.keys(this.state.calendars).sort().map(id =>
                                        <CompactListItem
                                            key={id}
@@ -458,9 +473,9 @@ class Settings extends React.Component<SettingsProps> {
                                    onClick={this.handleLoadDefault}>Load Default</Button>
                                </div>
                            </STableCell>
-                           <STableCell className={classes.tableContent}>
+                           <STableCell className={classes.tableContent}  style={{paddingRight: 0}}>
                                {(this.state.isLoggedIn &&
-                               <FormControl fullWidth={true}>
+                               <FormControl fullWidth={true} className={classes.patternTable}>
                                <PatternTable
                                    patterns={this.state.patterns}
                                    calendars={this.state.calendars}
@@ -473,7 +488,9 @@ class Settings extends React.Component<SettingsProps> {
                            <STableCell className={classes.tableHead}>
                                 Tracked Time Range
                            </STableCell>
-                           <STableCell className={classNames(classes.tableContent, classes.trackedPeriodInput)}>
+                           <STableCell className={classes.tableContent}>
+                               <div className={classes.trackedPeriodInput}>
+                                <div style={{minWidth: 600}}>
                                {this.state.trackedPeriods &&
                                    this.state.trackedPeriods.map((p, idx) =>
                                    <FormGroup key={idx}>
@@ -485,6 +502,8 @@ class Settings extends React.Component<SettingsProps> {
                                        fromOnChange={this.handlePeriodFromChange(idx)}
                                        toOnChange={this.handlePeriodToChange(idx)}/>
                                    </FormGroup>)}
+                                </div>
+                                </div>
                            </STableCell>
                        </TableRow>
                        <TableRow>
@@ -492,7 +511,7 @@ class Settings extends React.Component<SettingsProps> {
                             Misc
                            </STableCell>
                            <STableCell className={classes.tableContent}>
-                               <List>
+                               <List className={classes.list} disablePadding>
                                 <CompactListItem
                                         key="overrideNewTab"
                                         onClick={() => this.toggleOverrideNewTab()}

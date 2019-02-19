@@ -108,7 +108,7 @@ class Popup extends React.Component<PopupProps> {
                     ${moment(d.end).format('ddd, MMM Do, YYYY')}`}
                     </Typography>
                     {(d.data.some(dd => dd.value > 1e-3) &&
-                    <StyledPatternPieChart data={d.data} />) ||
+                    <div style={{height: 300}}><StyledPatternPieChart data={d.data} /></div>) ||
                     <Typography variant="subtitle1" align="center" color="textSecondary">
                         No matching events.
                     </Typography>}

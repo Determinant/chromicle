@@ -7,6 +7,7 @@ let loggedIn: boolean = null;
 
 enum GApiError {
     invalidSyncToken = "invalidSyncToken",
+    invalidAuthToken = "invalidAuthToken",
     notLoggedIn = "notLoggedIn",
     notLoggedOut = "notLoggedOut",
     otherError = "otherError",
@@ -120,22 +121,24 @@ function getEvents(calId: string, token: string,
             timeMax,
             maxResults: resultsPerRequest
         })}`, { method: 'GET' });
-        if (response.status === 200)
-        {
-            let data = await response.json();
-            results.push(...data.items);
-            if (data.nextPageToken) {
-                return singleFetch(data.nextPageToken, '');
-            } else {
-                return ({
-                    nextSyncToken: data.nextSyncToken,
-                    results
-                });
+        switch (response.status) {
+            case 200: {
+                let data = await response.json();
+                results.push(...data.items);
+                if (data.nextPageToken) {
+                    return singleFetch(data.nextPageToken, '');
+                } else {
+                    return ({
+                        nextSyncToken: data.nextSyncToken,
+                        results
+                    });
+                }
+                break;
             }
+            case 410: throw GApiError.invalidSyncToken; break;
+            case 401: throw GApiError.invalidAuthToken; break;
+            default: throw GApiError.otherError;
         }
-        else if (response.status === 410)
-            throw GApiError.invalidSyncToken;
-        else throw GApiError.otherError;
     };
 
     return singleFetch('', syncToken);

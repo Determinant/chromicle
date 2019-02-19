@@ -17,7 +17,7 @@ type PatternPieChartProps = {
         patternTableWrapper: string,
         pieChart: string
     },
-    height?: number,
+    height?: number | string,
     data: PatternGraphData[],
     radialLabelsLinkStrokeWidth?: number,
     radialLabelsLinkDiagonalLength?: number,
@@ -52,7 +52,6 @@ export class PatternPieChart extends React.Component<PatternPieChartProps> {
             }
         };
     return (
-        <div style={{height: (height ? height : 300)}}>
             <ResponsivePie
             data={data.map(p => ({
                 id: p.name,
@@ -88,7 +87,6 @@ export class PatternPieChart extends React.Component<PatternPieChartProps> {
             motionDamping={15}
             theme={theme}
             tooltipFormat={v => `${v.toFixed(2)} hr`} />
-        </div>
     );
     }
 }
@@ -107,11 +105,11 @@ type DoublePieChartProps = {
 function DoublePieChart(props: DoublePieChartProps) {
     return (
     <Grid container spacing={0}>
-      <Grid item xs={12} lg={6}>
-      <StyledPatternPieChart data={props.patternGraphData} height={300} />
+      <Grid item md={12} lg={12} style={{height: 300}}>
+      <StyledPatternPieChart data={props.patternGraphData} />
       </Grid>
-      <Grid item xs={12} lg={6}>
-      <StyledPatternPieChart data={props.calendarGraphData} height={300} />
+      <Grid item md={12} lg={12} style={{height: 300}}>
+      <StyledPatternPieChart data={props.calendarGraphData} />
       </Grid>
     </Grid>);
 }

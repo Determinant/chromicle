@@ -105,6 +105,7 @@ class Tab extends React.Component<TabProps> {
                     ${moment(d.end).format('ddd, MMM Do, YYYY')}`}
                     </Typography>
                     {(d.data.some(dd => dd.value > 1e-3) &&
+                    <div style={{height: 400}}>
                     <StyledPatternPieChart
                         data={d.data}
                         height={400}
@@ -114,6 +115,7 @@ class Tab extends React.Component<TabProps> {
                         radialLabelsLinkDiagonalLength={40}
                         labelFontSize={14}
                         padAngle={0.8} />
+                    </div>
                     ) ||
                     <Typography variant="subtitle1" align="center" color="textSecondary">
                         No matching events.
