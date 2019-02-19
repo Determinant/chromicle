@@ -18,12 +18,12 @@ import { PatternEntry, PatternEntryColor } from './pattern';
 import { GCalendarMeta } from './gapi';
 
 const styles = (theme: Theme): StyleRules => ({
-    deleteButton: {
+    deleteButtonRow: {
         width: 0,
         position: 'absolute',
         paddingRight: '24px',
         right: 0,
-        lineHeight: '48px',
+        lineHeight: '47px',
     },
     deleteButtonHide: {
         display: 'none'
@@ -32,15 +32,22 @@ const styles = (theme: Theme): StyleRules => ({
         backgroundColor: theme.palette.background.default,
         zIndex: 1
     },
-    deleteIcon: {
+    deleteButton: {
         position: 'absolute',
         cursor: 'pointer'
     },
+    deleteIcon: {
+        verticalAlign: 'middle'
+    },
     patternTableWrapper: {
-        overflowX: 'auto',
-        overflowY: 'hidden'
+        width: '100%',
+        position: 'relative'
     },
     patternTable: {
+        overflowX: 'auto',
+        overflowY: 'hidden',
+    },
+    patternTableInner: {
         minWidth: 600
     }
 });
@@ -52,12 +59,18 @@ let nameFieldstyles = {
         width: 30,
         marginRight: 10,
         cursor: 'pointer'
+    },
+    wrapper: {
+        minWidth: 250
     }
 };
 
 type NameFieldProps = {
     value: PatternEntry,
-    classes: { colorSample: string },
+    classes: {
+        colorSample: string,
+        wrapper: string
+    },
     colorOnClick: (e: React.MouseEvent<HTMLDivElement>) => void,
     onChange: (f: string, v: string) => void
 };
@@ -65,7 +78,7 @@ type NameFieldProps = {
 function NameField(props: NameFieldProps) {
     let color = props.value.color.background;
     return (
-        <div style={{minWidth: 250}}>
+        <div className={props.classes.wrapper}>
             <div
                 className={props.classes.colorSample}
                 style={{backgroundColor: (color ? color : defaultChartColor)}}
@@ -84,12 +97,14 @@ const patternHead: {label: string, elem: any}[] = [
 
 type PatternTableProps = {
     classes: {
+        deleteButtonRow: string,
         deleteButton: string,
         deleteButtonHide: string,
         deleteButtonShow: string,
         deleteIcon: string,
         patternTableWrapper: string,
         patternTable: string,
+        patternTableInner: string,
     },
     calendars: { [id: string]: GCalendarMeta },
     patterns: PatternEntry[],
@@ -132,13 +147,15 @@ class PatternTable extends React.Component<PatternTableProps> {
         let rows = patterns.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((p, i) => {
             let setActive = () => this.setState({ activePattern: p.idx });
             let unsetActive = () => this.setState({ activePattern: null });
+            let deleteButtonClass = this.state.activePattern !== p.idx ?
+                classes.deleteButtonHide : classes.deleteButtonShow;
             return [<TableRow key={i * 2}
                 onMouseOver={setActive} onMouseOut={unsetActive}
-                className={classes.deleteButton}>
+                className={classes.deleteButtonRow}>
                 <td>
-                    <div className={classNames(this.state.activePattern !== p.idx ? classes.deleteButtonHide : classes.deleteButtonShow, classes.deleteIcon)}>
+                    <div className={classNames(deleteButtonClass, classes.deleteButton)}>
                     <DeleteOutlinedIcon
-                        style={{verticalAlign: 'middle'}}
+                        className={classes.deleteIcon}
                         onClick={() => this.props.onRemovePattern(p.idx)} />
                     </div>
                 </td>
@@ -169,7 +186,7 @@ class PatternTable extends React.Component<PatternTableProps> {
         rows.flat();
 
         return (
-            <div style={{width: '100%', position: 'relative'}}>
+            <div className={classes.patternTableWrapper}>
                 <Popover
                     id="colorPicker"
                     open={this.state.colorPickerOpen}
@@ -196,8 +213,8 @@ class PatternTable extends React.Component<PatternTableProps> {
                         resetLabel='Reset'
                     />
                 </Popover>
-                <div className={classes.patternTableWrapper}>
-                    <Table className={classes.patternTable}>
+                <div className={classes.patternTable}>
+                    <Table className={classes.patternTableInner}>
                         <TableHead>
                             <TableRow>{patternHead.map((s, i) => (<TableCell key={i}>{s.label}</TableCell>))}</TableRow>
                         </TableHead>
@@ -211,17 +228,17 @@ class PatternTable extends React.Component<PatternTableProps> {
                             }
                         </TableBody>
                     </Table>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={patterns.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    backIconButtonProps={{'aria-label': 'Previous Page'}}
-                    nextIconButtonProps={{'aria-label': 'Next Page'}}
-                    onChangePage={this.handleChangePage}
-                    onChangeRowsPerPage={this.handleChangeRowsPerPage} />
                 </div>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 25]}
+                        component="div"
+                        count={patterns.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        backIconButtonProps={{'aria-label': 'Previous Page'}}
+                        nextIconButtonProps={{'aria-label': 'Next Page'}}
+                        onChangePage={this.handleChangePage}
+                        onChangeRowsPerPage={this.handleChangeRowsPerPage} />
             </div>);
     }
 }

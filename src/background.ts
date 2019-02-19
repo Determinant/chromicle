@@ -139,12 +139,12 @@ function updateMainGraphData() {
         let startD = p.start.toMoment();
         let endD = p.end.toMoment();
         if (!(startD && endD)) return;
-        let start = moment().endOf('day');
+        let start = moment().add(1, 'days').startOf('day');
         if (endD.valueOf() == 0) {
             switch (p.start.unit) {
-                case 'days': start = moment().endOf('day'); break;
-                case 'weeks': start = moment().endOf('week'); break;
-                case 'months': start = moment().endOf('month'); break;
+                case 'days': start = moment().add(1, 'days').startOf('day'); break;
+                case 'weeks': start = moment().add(1, 'weeks').startOf('isoWeek'); break;
+                case 'months': start = moment().add(1, 'months').startOf('month'); break;
                 default:
             }
         }

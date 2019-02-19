@@ -38,7 +38,8 @@ const styles = (theme: Theme): StyleRules => ({
         verticalAlign: 'top',
         textAlign: 'right',
         lineHeight: '3em',
-        minWidth: 250
+        minWidth: 250,
+        width: '20%'
     },
     tableContent: {
         textAlign: 'left',
@@ -48,13 +49,13 @@ const styles = (theme: Theme): StyleRules => ({
         marginLeft: -12
     },
     calendarList: {
-        maxHeight: 400,
+        maxHeight: 200,
         overflowY: 'auto'
     },
     bottomButtons: {
         marginTop: 10,
         textAlign: 'right',
-        minWidth: 600
+        minWidth: 650
     },
     trackedPeriodInput: {
         paddingTop: 10,
@@ -158,6 +159,7 @@ type SettingsProps = {
         tableHead: string,
         tableContent: string,
         calendarList: string,
+        patternTableCell: string,
         bottomButtons: string,
         trackedPeriodInput: string,
         list: string,
@@ -442,9 +444,10 @@ class Settings extends React.Component<SettingsProps> {
                            </IconButton>
                                Calendars
                            </STableCell>
-                           <STableCell className={classes.tableContent}>
+                           <STableCell className={classes.tableContent} style={{paddingRight: 0}}>
+                                <div className={classNames(classes.calendarList, classes.list)}>
                                {(this.state.isLoggedIn &&
-                               <List className={classNames(classes.calendarList, classes.list)} disablePadding>
+                               <List disablePadding>
                                    {Object.keys(this.state.calendars).sort().map(id =>
                                        <CompactListItem
                                            key={id}
@@ -456,7 +459,7 @@ class Settings extends React.Component<SettingsProps> {
                                            disableRipple />
                                        <ListItemText primary={this.state.calendars[id].name} />
                                        </CompactListItem>)}
-                               </List>) || 'Please Login.'}
+                               </List>) || 'Please Login.'}</div>
                            </STableCell>
                        </TableRow>
                        <TableRow>
@@ -473,7 +476,7 @@ class Settings extends React.Component<SettingsProps> {
                                    onClick={this.handleLoadDefault}>Load Default</Button>
                                </div>
                            </STableCell>
-                           <STableCell className={classes.tableContent}  style={{paddingRight: 0}}>
+                           <STableCell className={classes.tableContent} style={{paddingRight: 0}}>
                                {(this.state.isLoggedIn &&
                                <FormControl fullWidth={true} className={classes.patternTable}>
                                <PatternTable
@@ -510,8 +513,8 @@ class Settings extends React.Component<SettingsProps> {
                            <STableCell className={classes.tableHead}>
                             Misc
                            </STableCell>
-                           <STableCell className={classes.tableContent}>
-                               <List className={classes.list} disablePadding>
+                           <STableCell className={classNames(classes.tableContent, classes.list)}>
+                               <List disablePadding>
                                 <CompactListItem
                                         key="overrideNewTab"
                                         onClick={() => this.toggleOverrideNewTab()}

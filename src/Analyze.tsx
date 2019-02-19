@@ -194,7 +194,7 @@ class Analyze extends React.Component<AnalyzeProps> {
         const { classes } = this.props;
 
         return (
-            <Grid container spacing={16}>
+            <Grid container spacing={16} style={{minWidth: 700}}>
                 <AlertDialog
                     title={this.state.dialogMsg.title}
                     message={this.state.dialogMsg.message}
@@ -239,17 +239,17 @@ class Analyze extends React.Component<AnalyzeProps> {
                         </FormGroup>
                         <div className={classes.buttonSpacer} />
                         <Grid container spacing={16}>
-                            <Grid item md={4} xs={12}>
+                            <Grid item lg={4} xs={12}>
                                 <FormGroup>
                                     <Button variant="contained" color="primary" onClick={this.loadDefault}>Load Default</Button>
                                 </FormGroup>
                             </Grid>
-                            <Grid item md={4} xs={12}>
+                            <Grid item lg={4} xs={12}>
                                 <FormGroup>
                                     <Button variant="contained" color="primary" onClick={this.reset}>Reset</Button>
                                 </FormGroup>
                             </Grid>
-                            <Grid item md={4} xs={12}>
+                            <Grid item lg={4} xs={12}>
                                 <FormGroup>
                                     <Button variant="contained" color="primary" onClick={this.analyze}>Analyze</Button>
                                 </FormGroup>

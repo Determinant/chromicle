@@ -74,6 +74,7 @@ class Tab extends React.Component<TabProps> {
     render() {
         let { classes } = this.props;
         let data = this.state.patternGraphData;
+        console.log(data);
         return (
             <MuiThemeProvider theme={theme}>
             <CssBaseline />
