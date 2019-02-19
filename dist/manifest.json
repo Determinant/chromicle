@@ -18,7 +18,8 @@
     },
     "permissions": [
         "identity",
-        "storage"
+        "storage",
+        "tabs"
     ],
     "icons": {
         "16": "icon16.png",

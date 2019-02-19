@@ -14,7 +14,8 @@ let config = {
         new TrackedPeriod('Today', Duration.days(1), Duration.days(0)),
         new TrackedPeriod('Yesterday', Duration.days(2), Duration.days(1)),
         new TrackedPeriod('This Week', Duration.weeks(1), Duration.weeks(0)),
-        new TrackedPeriod('This Month', Duration.months(1), Duration.months(0))] as TrackedPeriod[]
+        new TrackedPeriod('This Month', Duration.months(1), Duration.months(0))] as TrackedPeriod[],
+    overrideNewTab: false
 };
 let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
@@ -48,7 +49,8 @@ async function loadMetadata() {
         else
         {
             config = {
-                trackedPeriods: items.config.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p))
+                trackedPeriods: items.config.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p)),
+                overrideNewTab: items.config.overrideNewTab
             };
             calendars = items.calendars;
             mainPatterns = items.mainPatterns.map((p: PatternEntryFlat) => PatternEntry.inflate(p));
@@ -64,7 +66,8 @@ async function saveMetadata() {
     await chromeStorageSet({
         calendars,
         config: {
-            trackedPeriods: config.trackedPeriods.map(p => p.deflate())
+            trackedPeriods: config.trackedPeriods.map(p => p.deflate()),
+            overrideNewTab: config.overrideNewTab
         },
         mainPatterns: mainPatterns.map(p => p.deflate()),
         analyzePatterns: analyzePatterns.map(p => p.deflate())
@@ -169,7 +172,10 @@ async function pollSync() {
     let pms = [];
     for (let id in calendars) {
         if (!calendars[id].enabled) continue;
-        pms.push(getCalData(id).sync());
+        pms.push(getCalData(id).sync().catch(err => {
+            console.log(`cannot sync calendar ${id}`, err);
+            calendars[id].enabled = false;
+        }));
     }
     await Promise.all(pms);
     /* update the tracked graph data */
@@ -239,7 +245,13 @@ function handleMsg(port: chrome.runtime.Port) {
             break;
         }
         case MsgType.updateConfig: {
-            config.trackedPeriods = msg.data.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p));
+            for (let prop in msg.data) {
+                if (prop === 'trackedPeriods') {
+                    config.trackedPeriods = msg.data.trackedPeriods.map((p: TrackedPeriodFlat) => TrackedPeriod.inflate(p));
+                } else if (prop == 'overrideNewTab') {
+                    config.overrideNewTab = msg.data.overrideNewTab as boolean;
+                }
+            }
             dirtyMetadata = true;
             port.postMessage(msg.genResp(null));
             break;
@@ -249,6 +261,8 @@ function handleMsg(port: chrome.runtime.Port) {
             msg.data.forEach((prop: string) => {
                 if (prop === 'trackedPeriods')
                     res.trackedPeriods = config.trackedPeriods.map(p => p.deflate());
+                else if (prop === 'overrideNewTab')
+                    res.overrideNewTab = config.overrideNewTab;
             });
             port.postMessage(msg.genResp(res));
             break;
@@ -270,6 +284,11 @@ function handleMsg(port: chrome.runtime.Port) {
             })();
             break;
         }
+        case MsgType.clearCache: {
+            calData = {};
+            port.postMessage(msg.genResp(null));
+            break;
+        }
         default: console.error("unknown msg opt");
         }
     });
@@ -281,3 +300,13 @@ loadPromise = (async () => {
 })();
 
 chrome.runtime.onConnect.addListener(handleMsg);
+
+chrome.tabs.onCreated.addListener(function(tab) {
+    if (tab.url === "chrome://newtab/") {
+        if (config.overrideNewTab) {
+            chrome.tabs.update(tab.id, {
+                url: chrome.extension.getURL("tab.html")
+            });
+        }
+    }
+});

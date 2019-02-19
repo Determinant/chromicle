@@ -18,50 +18,79 @@ type PatternPieChartProps = {
         pieChart: string
     },
     height?: number,
-    data: PatternGraphData[]
+    data: PatternGraphData[],
+    radialLabelsLinkStrokeWidth?: number,
+    radialLabelsLinkDiagonalLength?: number,
+    borderWidth: number,
+    labelFontSize : number,
+    marginTop: number,
+    marginBottom: number,
+    marginLeft: number,
+    marginRight: number,
+    padAngle: number
 };
 
-function PatternPieChart(props: PatternPieChartProps) {
+export class PatternPieChart extends React.Component<PatternPieChartProps> {
+    public static defaultProps = {
+        radialLabelsLinkStrokeWidth: 1,
+        borderWidth: 1,
+        radialLabelsLinkDiagonalLength: 16,
+        labelFontSize: 12,
+        marginTop: 40,
+        marginBottom: 40,
+        marginLeft: 80,
+        marginRight: 80,
+        padAngle: 0.7
+    };
+    render() {
+        let { height, data, labelFontSize } = this.props;
+        const theme = {
+            labels: {
+                text: {
+                    fontSize: labelFontSize
+                }
+            }
+        };
     return (
-        <Grid item xs={12} lg={6}>
-            <div style={{height: (props.height ? props.height : 300)}}>
-                <ResponsivePie
-                data={props.data.map(p => ({
-                    id: p.name,
-                    label: p.name,
-                    value: p.value,
-                    color: p.color ? p.color: defaultChartColor
-                }))}
-                margin={{
-                    top: 40,
-                    right: 80,
-                    bottom: 40,
-                    left: 80
-                }}
-                innerRadius={0.5}
-                padAngle={0.7}
-                cornerRadius={3}
-                colorBy={d => d.color as string}
-                borderWidth={1}
-                borderColor="inherit:darker(0.2)"
-                radialLabelsSkipAngle={10}
-                radialLabelsTextXOffset={6}
-                radialLabelsTextColor="#333333"
-                radialLabelsLinkOffset={0}
-                radialLabelsLinkDiagonalLength={16}
-                radialLabelsLinkHorizontalLength={24}
-                radialLabelsLinkStrokeWidth={1}
-                radialLabelsLinkColor="inherit"
-                sliceLabel={(d) => `${d.value.toFixed(2)} hr`}
-                slicesLabelsSkipAngle={10}
-                slicesLabelsTextColor="#ffffff"
-                animate={true}
-                motionStiffness={90}
-                motionDamping={15}
-                tooltipFormat={v => `${v.toFixed(2)} hr`} />
-            </div>
-        </Grid>
+        <div style={{height: (height ? height : 300)}}>
+            <ResponsivePie
+            data={data.map(p => ({
+                id: p.name,
+                label: p.name,
+                value: p.value,
+                color: p.color ? p.color: defaultChartColor
+            }))}
+            margin={{
+                top: this.props.marginTop,
+                right: this.props.marginRight,
+                bottom: this.props.marginBottom,
+                left: this.props.marginLeft
+            }}
+            innerRadius={0.5}
+            padAngle={this.props.padAngle}
+            cornerRadius={3}
+            colorBy={d => d.color as string}
+            borderWidth={this.props.borderWidth}
+            borderColor="inherit:darker(0.2)"
+            radialLabelsSkipAngle={10}
+            radialLabelsTextXOffset={6}
+            radialLabelsTextColor="#333333"
+            radialLabelsLinkOffset={0}
+            radialLabelsLinkDiagonalLength={this.props.radialLabelsLinkDiagonalLength}
+            radialLabelsLinkHorizontalLength={24}
+            radialLabelsLinkStrokeWidth={this.props.radialLabelsLinkStrokeWidth}
+            radialLabelsLinkColor="inherit"
+            sliceLabel={(d) => `${d.value.toFixed(2)} hr`}
+            slicesLabelsSkipAngle={10}
+            slicesLabelsTextColor="#ffffff"
+            animate={true}
+            motionStiffness={90}
+            motionDamping={15}
+            theme={theme}
+            tooltipFormat={v => `${v.toFixed(2)} hr`} />
+        </div>
     );
+    }
 }
 
 export const StyledPatternPieChart = withStyles(styles)(PatternPieChart);
@@ -78,8 +107,12 @@ type DoublePieChartProps = {
 function DoublePieChart(props: DoublePieChartProps) {
     return (
     <Grid container spacing={0}>
+      <Grid item xs={12} lg={6}>
       <StyledPatternPieChart data={props.patternGraphData} height={300} />
+      </Grid>
+      <Grid item xs={12} lg={6}>
       <StyledPatternPieChart data={props.calendarGraphData} height={300} />
+      </Grid>
     </Grid>);
 }
 

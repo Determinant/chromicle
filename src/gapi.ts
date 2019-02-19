@@ -332,8 +332,7 @@ export class GCalendar {
 
     addEvent(e: {start: Date, end: Date, id: string, summary: string}, evict = false) {
         //console.log('adding event', e);
-        if (this.eventMeta.hasOwnProperty(e.id))
-            this.removeEvent(e);
+        this.removeEvent(e);
         let r = this.dateRangeToCacheKeys(e);
         let ks = r.start;
         let ke = r.end;
@@ -361,6 +360,8 @@ export class GCalendar {
     }
 
     removeEvent(e: {id: string}) {
+        if (!this.eventMeta.hasOwnProperty(e.id))
+            return;
         let keys = this.eventMeta[e.id].keys;
         keys.forEach(k => delete this.getSlot(k)[e.id]);
         delete this.eventMeta[e.id];

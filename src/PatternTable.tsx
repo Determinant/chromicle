@@ -60,12 +60,12 @@ type NameFieldProps = {
 };
 
 function NameField(props: NameFieldProps) {
-    let color = props.value.color;
+    let color = props.value.color.background;
     return (
         <span>
             <div
                 className={props.classes.colorSample}
-                style={{backgroundColor: color ? color.background : defaultChartColor}}
+                style={{backgroundColor: (color ? color : defaultChartColor)}}
                 onClick={props.colorOnClick}>
             </div>
             <TextField
@@ -117,7 +117,7 @@ class PatternTable extends React.Component<PatternTableProps> {
 
     handleColorPickerClose = () => {
         this.setState({ colorPickerOpen: false });
-        this.activeColorPattern !== null && this.chosenColor !== null &&
+        this.activeColorPattern !== null && this.chosenColor &&
             this.props.onUpdatePattern('color', this.activeColorPattern,
                 { background: this.chosenColor });
     }

@@ -7,7 +7,8 @@ module.exports = (env, argv) => {
         entry: {
             index: "./src/index.tsx",
             background: "./src/background.ts",
-            popup: "./src/popup.tsx"
+            popup: "./src/popup.tsx",
+            tab: "./src/tab.tsx"
         },
         output: {
             path: path.join(__dirname, "/dist"),
@@ -46,6 +47,11 @@ module.exports = (env, argv) => {
                 chunks: ['popup'],
                 template: "./src/index.html",
                 filename: "./popup.html"
+            }),
+            new HtmlWebpackPlugin({
+                chunks: ['tab'],
+                template: "./src/tab.html",
+                filename: "./tab.html"
             }),
             new CopyWebpackPlugin([
                 {from:'./public/', to:'./'}

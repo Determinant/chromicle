@@ -8,7 +8,8 @@ export enum MsgType {
     getCalEvents = "getCalEvents",
     updateConfig = "updateConfig",
     getConfig = "getConfig",
-    getGraphData = "getGraphData"
+    getGraphData = "getGraphData",
+    clearCache = "clearCache"
 }
 
 function stringifyMsgType(opt: MsgType): string { return MsgType[opt]; }
@@ -23,6 +24,7 @@ function parseMsgType(s: string): MsgType {
         case "updateConfig": return MsgType.updateConfig;
         case "getConfig": return MsgType.getConfig;
         case "getGraphData": return MsgType.getGraphData;
+        case "clearCache": return MsgType.clearCache;
         default: console.error(`unknown MsgType: ${s}`);
     }
 }

@@ -161,7 +161,8 @@ class Settings extends React.Component<SettingsProps> {
         isLoggedIn: false,
         patterns: [] as PatternEntry[],
         calendars: {} as {[id: string]: gapi.GCalendarMeta},
-        config: {} as { trackedPeriods: TrackedPeriodFlat[] },
+        trackedPeriods: [] as TrackedPeriodFlat[],
+        overrideNewTab: false,
         snackBarOpen: false,
         snackBarMsg: 'unknown',
         snackBarVariant: 'error' as SnackbarVariant,
@@ -194,13 +195,14 @@ class Settings extends React.Component<SettingsProps> {
 
         this.msgClient.sendMsg({
             opt: MsgType.getConfig,
-            data: ['trackedPeriods']
+            data: ['trackedPeriods', 'overrideNewTab']
         }).then(msg => {
             let config = {
-                trackedPeriods: msg.data.trackedPeriods
+                trackedPeriods: msg.data.trackedPeriods,
+                overrideNewTab: msg.data.overrideNewTab
             };
             console.log(msg.data.trackedPeriods);
-            this.setState({ config });
+            this.setState(config);
         });
 
         this.dialogPromiseResolver = null;
@@ -221,6 +223,7 @@ class Settings extends React.Component<SettingsProps> {
         if (!ans) return;
         try {
             await gapi.logout();
+            await this.msgClient.sendMsg({ opt: MsgType.clearCache, data: {} });
             this.setState({ isLoggedIn: false });
         } catch (_) {
             this.openSnackbar("Failed to logout!", 'error' as SnackbarVariant);
@@ -253,6 +256,7 @@ class Settings extends React.Component<SettingsProps> {
             pms.push(this.loadDefaultPatterns(cals));
         await Promise.all(pms);
         this.setState({ calendarsLoading: false });
+        if (reloadAll) this.handleApply();
     };
 
     loadDefaultPatterns(calendars: {[ id: string ]: gapi.GCalendarMeta }) {
@@ -326,29 +330,29 @@ class Settings extends React.Component<SettingsProps> {
     }
 
     updateTrackedPeriods = (trackedPeriods: TrackedPeriodFlat[]) => {
-        this.setState({...this.state.config, trackedPeriods });
+        this.setState({ trackedPeriods });
     }
 
     handlePeriodNameChange = (idx: number) => (name: string) => {
-        let trackedPeriods = [...this.state.config.trackedPeriods];
+        let trackedPeriods = [...this.state.trackedPeriods];
         trackedPeriods[idx].name = name;
         this.updateTrackedPeriods(trackedPeriods);
     }
 
     handlePeriodFromChange = (idx: number) => (duration: DurationFlat) => {
-        let trackedPeriods = [...this.state.config.trackedPeriods];
+        let trackedPeriods = [...this.state.trackedPeriods];
         trackedPeriods[idx].start = duration;
         this.updateTrackedPeriods(trackedPeriods);
     }
 
     handlePeriodToChange = (idx: number) => (duration: DurationFlat) => {
-        let trackedPeriods = [...this.state.config.trackedPeriods];
+        let trackedPeriods = [...this.state.trackedPeriods];
         trackedPeriods[idx].end = duration;
         this.updateTrackedPeriods(trackedPeriods);
     }
 
     handleApply = async () => {
-        let trackedPeriods = this.state.config.trackedPeriods;
+        let trackedPeriods = this.state.trackedPeriods;
         if (trackedPeriods.some(p => (
                 TrackedPeriodInput.toValue(p.start.value) === null ||
                 TrackedPeriodInput.toValue(p.end.value) === null ))) {
@@ -368,6 +372,11 @@ class Settings extends React.Component<SettingsProps> {
             opt: MsgType.updateConfig,
             data: { trackedPeriods }
         });
+        let pm4 = this.msgClient.sendMsg({
+            opt: MsgType.updateConfig,
+            data: {'overrideNewTab': this.state.overrideNewTab }
+        });
+
         await Promise.all([pm1, pm2, pm3]);
         this.openSnackbar("Saved changes.", 'success' as SnackbarVariant);
     }
@@ -376,6 +385,10 @@ class Settings extends React.Component<SettingsProps> {
         let ans = await this.openDialog("Load Default", "Load the calendars as patterns?");
         if (!ans) return;
         this.loadDefaultPatterns(this.state.calendars);
+    }
+
+    toggleOverrideNewTab() {
+        this.setState({ overrideNewTab: !this.state.overrideNewTab });
     }
 
     render() {
@@ -392,9 +405,6 @@ class Settings extends React.Component<SettingsProps> {
                     open={this.state.snackBarOpen}
                     variant={this.state.snackBarVariant}
                     onClose={this.handleSnackbarClose}/>
-               <Typography variant="h6" component="h1" gutterBottom>
-                   General
-               </Typography>
                <Table>
                    <TableBody>
                        <TableRow>
@@ -464,8 +474,8 @@ class Settings extends React.Component<SettingsProps> {
                                 Tracked Time Range
                            </STableCell>
                            <STableCell className={classNames(classes.tableContent, classes.trackedPeriodInput)}>
-                               {this.state.config.trackedPeriods &&
-                                   this.state.config.trackedPeriods.map((p, idx) =>
+                               {this.state.trackedPeriods &&
+                                   this.state.trackedPeriods.map((p, idx) =>
                                    <FormGroup key={idx}>
                                    <TrackedPeriodInput
                                        name={p.name}
@@ -475,6 +485,24 @@ class Settings extends React.Component<SettingsProps> {
                                        fromOnChange={this.handlePeriodFromChange(idx)}
                                        toOnChange={this.handlePeriodToChange(idx)}/>
                                    </FormGroup>)}
+                           </STableCell>
+                       </TableRow>
+                       <TableRow>
+                           <STableCell className={classes.tableHead}>
+                            Misc
+                           </STableCell>
+                           <STableCell className={classes.tableContent}>
+                               <List>
+                                <CompactListItem
+                                        key="overrideNewTab"
+                                        onClick={() => this.toggleOverrideNewTab()}
+                                        disableGutters dense button>
+                                    <Checkbox
+                                        checked={this.state.overrideNewTab}
+                                        disableRipple />
+                                    <ListItemText primary="Show graphs when open a new tab" />
+                                </CompactListItem>
+                               </List>
                            </STableCell>
                        </TableRow>
                    </TableBody>
