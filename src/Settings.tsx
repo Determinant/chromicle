@@ -187,9 +187,14 @@ class Settings extends React.Component<SettingsProps> {
 
     constructor(props: SettingsProps) {
         super(props);
-        gapi.getLoggedIn().then(b => this.setState({ isLoggedIn: b }));
-
         this.msgClient = new MsgClient('main');
+
+        this.msgClient.sendMsg({
+            opt: MsgType.getLoggedIn,
+            data: {}
+        }).then(msg => {
+            this.setState({ isLoggedIn: msg.data })
+        });
 
         this.msgClient.sendMsg({
             opt: MsgType.getPatterns,
@@ -224,7 +229,8 @@ class Settings extends React.Component<SettingsProps> {
 
     handleLogin = async () => {
         try {
-            await gapi.login();
+            let resp = await this.msgClient.sendMsg({ opt: MsgType.login, data: {} });
+            if (!resp.data) throw new Error("backend failes to login");
             this.setState({ isLoggedIn: true });
             this.loadAll(true);
         } catch (_) {
@@ -236,10 +242,12 @@ class Settings extends React.Component<SettingsProps> {
         let ans = await this.openDialog("Logout", "Are you sure to logout?");
         if (!ans) return;
         try {
-            await gapi.logout();
+            let resp = await this.msgClient.sendMsg({ opt: MsgType.logout, data: {} });
+            if (!resp.data) throw new Error("backend fails to logout");
             await this.msgClient.sendMsg({ opt: MsgType.clearCache, data: {} });
             this.setState({ isLoggedIn: false });
-        } catch (_) {
+        } catch (err) {
+            console.log(err);
             this.openSnackbar("Failed to logout!", 'error' as SnackbarVariant);
         }
     }
@@ -250,30 +258,38 @@ class Settings extends React.Component<SettingsProps> {
         this.setState({ calendars });
     }
 
-    async loadAll(reloadAll = false) {
+    async loadAll(reloadAll = false): Promise<void> {
         await new Promise(resolver => (this.setState({ calendarsLoading: true }, resolver)));
 
-        let pm_colors = gapi.getAuthToken().then(gapi.getColors).then(color => color.calendar);
-        let pm_cals = gapi.getAuthToken().then(gapi.getCalendars);
-        let [colors, _cals] = await Promise.all([pm_colors, pm_cals]);
-        var cals: { [id: string]: gapi.GCalendarMeta } = {};
-        _cals.forEach((cal: any) => {
-            let _color = colors[cal.colorId];
-            cals[cal.id] = {
-                name: cal.summary,
-                color: {
-                    background: ('#' + getColorFamily(_color.background)[300]).toLowerCase()
-                },
-                enabled: true
-            };
-        });
+        try {
+            let pm_colors = this.msgClient.sendMsg(
+                { opt: MsgType.fetchColors, data: {} }).then(msg => msg.data.calendar);
+            let pm_cals = this.msgClient.sendMsg(
+                { opt: MsgType.fetchCalendars, data: {} }).then(msg => msg.data);
+            let [colors, _cals] = await Promise.all([pm_colors, pm_cals]);
+            var cals: { [id: string]: gapi.GCalendarMeta } = {};
+            _cals.forEach((cal: any) => {
+                let _color = colors[cal.colorId];
+                cals[cal.id] = {
+                    name: cal.summary,
+                    color: {
+                        background: ('#' + getColorFamily(_color.background)[300]).toLowerCase()
+                    },
+                    enabled: true
+                };
+            });
 
-        let pms = [this.loadCalendars(cals, reloadAll)];
-        if (reloadAll)
-            pms.push(this.loadDefaultPatterns(cals));
-        await Promise.all(pms);
-        this.setState({ calendarsLoading: false });
-        if (reloadAll) this.handleApply();
+            let pms = [this.loadCalendars(cals, reloadAll)];
+            if (reloadAll)
+                pms.push(this.loadDefaultPatterns(cals));
+            await Promise.all(pms);
+            if (reloadAll) this.handleApply();
+        } catch (err) {
+            console.log(err);
+            this.openSnackbar("Failed to update calendars!", 'error' as SnackbarVariant);
+        } finally {
+            this.setState({ calendarsLoading: false });
+        }
     };
 
     loadDefaultPatterns(calendars: {[ id: string ]: gapi.GCalendarMeta }) {
@@ -445,8 +461,8 @@ class Settings extends React.Component<SettingsProps> {
                                Calendars
                            </STableCell>
                            <STableCell className={classes.tableContent} style={{paddingRight: 0}}>
-                                <div className={classNames(classes.calendarList, classes.list)}>
                                {(this.state.isLoggedIn &&
+                                <div className={classNames(classes.calendarList, classes.list)}>
                                <List disablePadding>
                                    {Object.keys(this.state.calendars).sort().map(id =>
                                        <CompactListItem
@@ -459,7 +475,7 @@ class Settings extends React.Component<SettingsProps> {
                                            disableRipple />
                                        <ListItemText primary={this.state.calendars[id].name} />
                                        </CompactListItem>)}
-                               </List>) || 'Please Login.'}</div>
+                               </List></div>) || 'Please Login.'}
                            </STableCell>
                        </TableRow>
                        <TableRow>

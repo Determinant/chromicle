@@ -77,9 +77,14 @@ class Analyze extends React.Component<AnalyzeProps> {
             this.setState({ calendars: msg.data });
         });
 
-        gapi.getLoggedIn().then(b => !b &&
-            this.openSnackbar('Not logged in. Operating in offline mode.',
-                            'warning' as SnackbarVariant));
+        this.msgClient.sendMsg({
+            opt: MsgType.getLoggedIn,
+            data: {}
+        }).then(msg => {
+            if (!msg.data)
+                this.openSnackbar('Not logged in. Operating in offline mode.',
+                                    'warning' as SnackbarVariant);
+        });
 
         this.dialogPromiseResolver = null;
     }

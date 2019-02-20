@@ -3,13 +3,13 @@
 import LRU from "lru-cache";
 
 const gapiBase = 'https://www.googleapis.com/calendar/v3';
-let loggedIn: boolean = null;
 
-enum GApiError {
+export enum GApiError {
     invalidSyncToken = "invalidSyncToken",
     invalidAuthToken = "invalidAuthToken",
     notLoggedIn = "notLoggedIn",
     notLoggedOut = "notLoggedOut",
+    fetchError = "fetchError",
     otherError = "otherError",
 }
 
@@ -34,43 +34,51 @@ function _removeCachedAuthToken(token: string) {
         chrome.identity.removeCachedAuthToken({ token }, () => resolver()));
 }
 
-export async function getLoggedIn(): Promise<boolean> {
-    if (loggedIn === null)
-    {
-        try {
-            await _getAuthToken(false);
-            loggedIn = true;
-        } catch(_) {
-            loggedIn = false;
+export class Auth {
+    _loggedIn: boolean;
+
+    constructor() {
+        this._loggedIn = null;
+    }
+
+    async loggedIn(): Promise<boolean> {
+        if (this._loggedIn === null)
+        {
+            try {
+                await _getAuthToken(false);
+                this._loggedIn = true;
+            } catch(_) {
+                this._loggedIn = false;
+            }
         }
+        return this._loggedIn;
     }
-    return loggedIn;
-}
 
-export async function getAuthToken(): Promise<string> {
-    let b = await getLoggedIn();
-    if (b) return _getAuthToken(false);
-    else throw GApiError.notLoggedIn;
-}
-
-export async function login(): Promise<void> {
-    let b = await getLoggedIn();
-    if (!b) {
-        await _getAuthToken(true);
-        loggedIn = true;
+    async getAuthToken(): Promise<string> {
+        let b = await this.loggedIn();
+        if (b) return _getAuthToken(false);
+        else throw GApiError.notLoggedIn;
     }
-    else throw GApiError.notLoggedOut;
-}
 
-export async function logout(): Promise<void> {
-    let token = await getAuthToken();
-    let response = await fetch(
-        `https://accounts.google.com/o/oauth2/revoke?${toParams({ token })}`,
-        { method: 'GET' });
-    //if (response.status === 200)
-    await _removeCachedAuthToken(token);
-    //else throw GApiError.otherError;
-    loggedIn = false;
+    async login(): Promise<void> {
+        let b = await this.loggedIn();
+        if (!b) {
+            await _getAuthToken(true);
+            this._loggedIn = true;
+        }
+        else throw GApiError.notLoggedOut;
+    }
+
+    async logout(): Promise<void> {
+        let token = await this.getAuthToken();
+        this._loggedIn = false;
+        let response = await fetch(
+            `https://accounts.google.com/o/oauth2/revoke?${toParams({ token })}`,
+            { method: 'GET' });
+        //if (response.status === 200)
+        await _removeCachedAuthToken(token);
+        //else throw GApiError.otherError;
+    }
 }
 
 export type GCalendarColor = {
@@ -87,14 +95,24 @@ export async function getCalendars(token: string): Promise<any> {
     let response = await fetch(
         `${gapiBase}/users/me/calendarList?${toParams({access_token: token})}`,
         { method: 'GET' });
-    return (await response.json()).items;
+    try {
+        return (await response.json()).items;
+    } catch (err) {
+        console.log(err);
+        throw GApiError.fetchError;
+    }
 }
 
 export async function getColors(token: string): Promise<any> {
     let response = await fetch(
         `${gapiBase}/colors?${toParams({access_token: token})}`,
         { method: 'GET' });
-    return response.json();
+    try {
+        return response.json();
+    } catch (err) {
+        console.log(err);
+        throw GApiError.fetchError;
+    }
 }
 
 async function getEvent(calId: string, eventId: string, token: string): Promise<any> {
@@ -113,14 +131,20 @@ function getEvents(calId: string, token: string,
     let results = [] as any[];
     const singleFetch = async (pageToken: string, syncToken: string):
             Promise<{nextSyncToken: string, results: any[]}> => {
-        let response = await fetch(`${gapiBase}/calendars/${calId}/events?${toParams({
-            access_token: token,
-            pageToken,
-            syncToken,
-            timeMin,
-            timeMax,
-            maxResults: resultsPerRequest
-        })}`, { method: 'GET' });
+        let response;
+        try {
+            response = await fetch(`${gapiBase}/calendars/${calId}/events?${toParams({
+                access_token: token,
+                pageToken,
+                syncToken,
+                timeMin,
+                timeMax,
+                maxResults: resultsPerRequest
+            })}`, { method: 'GET' });
+        } catch (err) {
+            console.log(err);
+            throw GApiError.fetchError;
+        }
         switch (response.status) {
             case 200: {
                 let data = await response.json();
@@ -235,11 +259,13 @@ export class GCalendar {
     eventMeta: { [id: string]: { keys: Set<number>, summary: string } };
     options: GCalendarOptions;
     divider: number;
+    auth: Auth;
 
-    constructor(calId: string, name: string,
+    constructor(calId: string, name: string, auth: Auth,
                 options={maxCachedItems: 100, nDaysPerSlot: 10, largeQuery: 10}) {
         this.calId = calId;
         this.name = name;
+        this.auth = auth;
         this.syncToken = '';
         this.cache = new LRU<number, GCalendarSlot>({
             max: options.maxCachedItems,
@@ -275,7 +301,7 @@ export class GCalendar {
         }
     }
 
-    static inflate(obj: GCalendarFlat) {
+    static inflate(obj: GCalendarFlat, auth: Auth) {
         let cache = obj.cache.map(t => {
             let slot: GCalendarSlot = {};
             for (let id in t.v)
@@ -289,7 +315,7 @@ export class GCalendar {
             eventMeta[id] = { keys: new Set(m.keys), summary: m.summary };
         }
 
-        let gcal = new GCalendar(obj.calId, obj.name, obj.options);
+        let gcal = new GCalendar(obj.calId, obj.name, auth, obj.options);
         gcal.syncToken = obj.syncToken;
         gcal.cache.load(cache);
         gcal.eventMeta = eventMeta;
@@ -297,7 +323,7 @@ export class GCalendar {
         return gcal;
     }
 
-    get token() { return getAuthToken(); }
+    get token() { return this.auth.getAuthToken(); }
 
     dateToCacheKey(date: Date) {
         return Math.floor(date.getTime() / this.divider);

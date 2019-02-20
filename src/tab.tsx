@@ -94,11 +94,11 @@ class Tab extends React.Component<TabProps> {
             </IconButton>
             </div>
             <div className={classes.buttonSpacer} />
-            <Grid container spacing={0} style={{ maxWidth: 1024, minWidth: 640, margin: '0 auto' }}>
+            <Grid container spacing={0} style={{ maxWidth: 900, minWidth: 640, margin: '0 auto' }}>
             {
                 (data.length > 0 &&
                 data.map((d, idx) => (
-                    <Grid item key={idx} xs={12} lg={6}>
+                    <Grid item key={idx} xs={12} md={6}>
                     <Typography variant="subtitle1" align="center" color="textPrimary">
                     {d.name}
                     </Typography>
@@ -119,25 +119,29 @@ class Tab extends React.Component<TabProps> {
                         padAngle={0.8} />
                     </div>) ||
                     <div style={{
-                        height: 250,
                         marginLeft: 100,
                         marginRight: 100,
                         marginTop: 60,
                         marginBottom: 60,
-                        textAlign: 'center',
-                        position: 'relative'
+                        textAlign: 'center'
                     }}>
+                        <div style={{
+                            position: 'relative',
+                            height: 250,
+                            display: 'inline-block'
+                        }}>
                         <Donut style={{
                             height: '100%'
                         }} />
                         <div style={{
                             position: 'absolute',
                             top: -40,
-                            left: 83,
+                            left: 55,
                         }}>
                             <Typography variant="subtitle1" align="center" color="textSecondary">
                                 No matching events.
                             </Typography>
+                        </div>
                         </div>
                     </div>}
                     </Grid>

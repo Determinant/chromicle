@@ -9,7 +9,12 @@ export enum MsgType {
     updateConfig = "updateConfig",
     getConfig = "getConfig",
     getGraphData = "getGraphData",
-    clearCache = "clearCache"
+    clearCache = "clearCache",
+    fetchCalendars = "fetchCalendars",
+    fetchColors = "fetchColors",
+    login = "login",
+    logout = "logout",
+    getLoggedIn = "getLoggedIn"
 }
 
 function stringifyMsgType(opt: MsgType): string { return MsgType[opt]; }
@@ -25,6 +30,11 @@ function parseMsgType(s: string): MsgType {
         case "getConfig": return MsgType.getConfig;
         case "getGraphData": return MsgType.getGraphData;
         case "clearCache": return MsgType.clearCache;
+        case "fetchCalendars": return MsgType.fetchCalendars;
+        case "fetchColors": return MsgType.fetchColors;
+        case "login": return MsgType.login;
+        case "logout": return MsgType.logout;
+        case "getLoggedIn": return MsgType.getLoggedIn;
         default: console.error(`unknown MsgType: ${s}`);
     }
 }

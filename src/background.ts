@@ -21,6 +21,7 @@ let mainGraphData: GraphData[] = [];
 let dirtyMetadata = false;
 let dirtyCalData = false;
 let loadPromise: Promise<void> = null;
+let auth = new gapi.Auth();
 
 enum ChromeError {
     storageGetError = "storageGetError",
@@ -85,7 +86,7 @@ async function loadCachedCals() {
             let calDataFlat: {[id: string]: gapi.GCalendarFlat} = items.calData;
             console.log(calDataFlat);
             for (let id in calDataFlat) {
-                calData[id] = gapi.GCalendar.inflate(calDataFlat[id]);
+                calData[id] = gapi.GCalendar.inflate(calDataFlat[id], auth);
             }
             console.log("cached cals loaded");
         }
@@ -112,8 +113,22 @@ async function saveCachedCals() {
 
 function getCalData(id: string) {
     if (!calData.hasOwnProperty(id))
-        calData[id] = new gapi.GCalendar(id, calendars[id].name);
+        calData[id] = new gapi.GCalendar(id, calendars[id].name, auth);
     return calData[id];
+}
+
+function handleGApiError(id: string, err: gapi.GApiError) {
+    if (err === gapi.GApiError.fetchError) {
+        console.log(`${id}: fetch error`);
+    } else if (err === gapi.GApiError.invalidAuthToken) {
+        console.log(`${id}: invalid auth token`);
+        calendars[id].enabled = false;
+    } else if (err === gapi.GApiError.notLoggedIn) {
+        console.log(`${id}: not logged in`);
+    } else {
+        console.log(`${id}: ${err}`);
+        calendars[id].enabled = false;
+    }
 }
 
 async function getCalEvents(id: string, start: Date, end: Date) {
@@ -123,8 +138,8 @@ async function getCalEvents(id: string, start: Date, end: Date) {
         dirtyCalData = res.changed;
         return res.events;
     } catch(err) {
-        console.log(`cannot load calendar ${id}`, err);
-        calendars[id].enabled = false;
+        handleGApiError(id, err);
+        console.log(`cannot load calendar ${id}`);
         return [];
     }
 }
@@ -173,8 +188,8 @@ async function pollSync() {
     for (let id in calendars) {
         if (!calendars[id].enabled) continue;
         pms.push(getCalData(id).sync().catch(err => {
-            console.log(`cannot sync calendar ${id}`, err);
-            calendars[id].enabled = false;
+            handleGApiError(id, err);
+            console.log(`cannot sync calendar ${id}`);
         }));
     }
     await Promise.all(pms);
@@ -289,6 +304,50 @@ function handleMsg(port: chrome.runtime.Port) {
             port.postMessage(msg.genResp(null));
             break;
         }
+        case MsgType.fetchCalendars: {
+            (async () => {
+                let token = await auth.getAuthToken();
+                let results = await gapi.getCalendars(token);
+                port.postMessage(msg.genResp(results));
+            })();
+            break;
+        }
+        case MsgType.fetchColors: {
+            (async () => {
+                let token = await auth.getAuthToken();
+                let results = await gapi.getColors(token);
+                port.postMessage(msg.genResp(results));
+            })();
+            break;
+        }
+        case MsgType.login: {
+            (async () => {
+                let succ = true;
+                try {
+                    await auth.login();
+                } catch (_) {
+                    succ = false;
+                }
+                port.postMessage(msg.genResp(succ));
+            })();
+            break;
+        }
+        case MsgType.logout: {
+            (async () => {
+                let succ = true;
+                try {
+                    await auth.logout();
+                } catch (_) {
+                    succ = false;
+                }
+                port.postMessage(msg.genResp(succ));
+            })();
+            break;
+        }
+        case MsgType.getLoggedIn: {
+            auth.loggedIn().then(b => port.postMessage(msg.genResp(b)));
+            break;
+        }
         default: console.error("unknown msg opt");
         }
     });
@@ -309,4 +368,8 @@ chrome.tabs.onCreated.addListener(function(tab) {
             });
         }
     }
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+    try { await auth.logout(); } catch (_) {}
 });
