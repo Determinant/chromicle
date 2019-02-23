@@ -371,5 +371,8 @@ chrome.tabs.onCreated.addListener(function(tab) {
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
-    try { await auth.logout(); } catch (_) {}
+    try {
+        await auth.logout();
+        calData = {};
+    } catch (_) {}
 });

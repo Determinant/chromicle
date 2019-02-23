@@ -112,22 +112,18 @@ class Tab extends React.Component<TabProps> {
                         data={d.data}
                         height={400}
                         borderWidth={2}
-                        marginTop={60} marginBottom={60}
-                        marginLeft={100} marginRight={100}
-                        radialLabelsLinkDiagonalLength={40}
-                        labelFontSize={14}
-                        padAngle={0.8} />
+                        paddingTop={20}
+                        paddingBottom={50}
+                        labelFontSize={14} />
                     </div>) ||
                     <div style={{
-                        marginLeft: 100,
-                        marginRight: 100,
-                        marginTop: 60,
+                        marginTop: 20,
                         marginBottom: 60,
                         textAlign: 'center'
                     }}>
                         <div style={{
                             position: 'relative',
-                            height: 250,
+                            height: 270,
                             display: 'inline-block'
                         }}>
                         <Donut style={{
@@ -135,8 +131,8 @@ class Tab extends React.Component<TabProps> {
                         }} />
                         <div style={{
                             position: 'absolute',
-                            top: -40,
-                            left: 55,
+                            bottom: -40,
+                            left: 60,
                         }}>
                             <Typography variant="subtitle1" align="center" color="textSecondary">
                                 No matching events.

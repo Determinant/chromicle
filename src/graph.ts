@@ -74,11 +74,12 @@ export async function getGraphData(
             if (ratio < 1e-2) minorSum += d.value;
             else majorParts.push(d);
         });
-        majorParts.push({
-            name: 'Other',
-            value: minorSum,
-            color: defaultChartColor,
-        });
+        if (minorSum > 0)
+            majorParts.push({
+                name: 'Other',
+                value: minorSum,
+                color: defaultChartColor,
+            });
         return majorParts;
     };
     for (let i = 0; i < patterns.length; i++) {

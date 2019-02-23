@@ -56,7 +56,9 @@ export class Auth {
 
     async getAuthToken(): Promise<string> {
         let b = await this.loggedIn();
-        if (b) return _getAuthToken(false);
+        //if (b) return _getAuthToken(false);
+        // FIXME: Chrome OS dev has a bug
+        if (b) return _getAuthToken(true);
         else throw GApiError.notLoggedIn;
     }
 
