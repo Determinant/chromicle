@@ -370,9 +370,6 @@ chrome.tabs.onCreated.addListener(function(tab) {
     }
 });
 
-chrome.runtime.onInstalled.addListener(async () => {
-    try {
-        await auth.logout();
-        calData = {};
-    } catch (_) {}
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.tabs.create({ url: "index.html" });
 });

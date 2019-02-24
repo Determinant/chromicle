@@ -21,11 +21,9 @@ import * as gapi from './gapi';
 import { MsgType, MsgClient } from './msg';
 import { Pattern, PatternEntry, PatternEntryFlat } from './pattern';
 import { AnalyzePieChart } from './Chart';
-import { getGraphData } from './graph';
+import { getGraphData, PatternGraphData } from './graph';
 
-const defaultChartData = [
-    {name: 'Work', value: 10, color: cyan[300]},
-    {name: 'Wasted', value: 10, color: deepOrange[300]}];
+const defaultChartData = [] as PatternGraphData[];
 
 const styles = (theme: Theme) => ({
     buttonSpacer: {

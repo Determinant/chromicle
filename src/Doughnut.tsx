@@ -9,7 +9,7 @@ const styles = {
     st6: {fill: '#F69D98'},
 };
 
-function Donut(props: {
+function Doughnut(props: {
     style: {[key: string]: string | number },
     classes: {
         st0: string,
@@ -157,4 +157,4 @@ function Donut(props: {
   </svg>);
 }
 
-export default withStyles(styles)(Donut);
+export default withStyles(styles)(Doughnut);

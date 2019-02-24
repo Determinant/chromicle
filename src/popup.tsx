@@ -11,7 +11,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Logo from './Logo';
 import { theme } from './theme';
-import { StyledPatternPieChart } from './Chart';
+import { DoughnutChart } from './Chart';
 import { MsgType, MsgClient } from './msg';
 import { GraphData } from './graph';
 import moment from 'moment';
@@ -47,7 +47,7 @@ type PopupProps = {
     }
 };
 
-class Popup extends React.Component<PopupProps> {
+class _Popup extends React.Component<PopupProps> {
     msgClient: MsgClient;
     state = {
         patternGraphData: [] as GraphData[],
@@ -108,7 +108,7 @@ class Popup extends React.Component<PopupProps> {
                     ${moment(d.end).format('ddd, MMM Do, YYYY')}`}
                     </Typography>
                     {(d.data.some(dd => dd.value > 1e-3) &&
-                    <div style={{height: 300}}><StyledPatternPieChart data={d.data} /></div>) ||
+                        <DoughnutChart height={300} data={d.data} />) ||
                     <Typography variant="subtitle1" align="center" color="textSecondary">
                         No matching events.
                     </Typography>}
@@ -124,6 +124,6 @@ class Popup extends React.Component<PopupProps> {
     }
 }
 
-const StyledPopup = withStyles(styles)(Popup);
+const Popup = withStyles(styles)(_Popup);
 
-ReactDOM.render(<StyledPopup />, document.getElementById('root'));
+ReactDOM.render(<Popup />, document.getElementById('root'));

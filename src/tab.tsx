@@ -10,9 +10,8 @@ import Grid from '@material-ui/core/Grid';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import Logo from './Logo';
-import Donut from './Donut';
 import { theme } from './theme';
-import { StyledPatternPieChart } from './Chart';
+import { DoughnutChart } from './Chart';
 import { MsgType, MsgClient } from './msg';
 import { GraphData } from './graph';
 import moment from 'moment';
@@ -45,7 +44,7 @@ type TabProps = {
 };
 
 
-class Tab extends React.Component<TabProps> {
+class _Tab extends React.Component<TabProps> {
     msgClient: MsgClient;
     state = {
         patternGraphData: [] as GraphData[],
@@ -106,40 +105,13 @@ class Tab extends React.Component<TabProps> {
                     {`${moment(d.start).format('ddd, MMM Do, YYYY')} -
                     ${moment(d.end).format('ddd, MMM Do, YYYY')}`}
                     </Typography>
-                    {(d.data.some(dd => dd.value > 1e-3) &&
-                    <div style={{height: 400}}>
-                    <StyledPatternPieChart
+                    <DoughnutChart
                         data={d.data}
                         height={400}
                         borderWidth={2}
                         paddingTop={20}
                         paddingBottom={50}
                         labelFontSize={14} />
-                    </div>) ||
-                    <div style={{
-                        marginTop: 20,
-                        marginBottom: 60,
-                        textAlign: 'center'
-                    }}>
-                        <div style={{
-                            position: 'relative',
-                            height: 270,
-                            display: 'inline-block'
-                        }}>
-                        <Donut style={{
-                            height: '100%'
-                        }} />
-                        <div style={{
-                            position: 'absolute',
-                            bottom: -40,
-                            left: 60,
-                        }}>
-                            <Typography variant="subtitle1" align="center" color="textSecondary">
-                                No matching events.
-                            </Typography>
-                        </div>
-                        </div>
-                    </div>}
                     </Grid>
                 ))) || (
                     <div className={classes.loading}><CircularProgress color="primary" /></div>
@@ -152,6 +124,6 @@ class Tab extends React.Component<TabProps> {
     }
 }
 
-const StyledTab = withStyles(styles)(Tab);
+const Tab = withStyles(styles)(_Tab);
 
-ReactDOM.render(<StyledTab />, document.getElementById('root'));
+ReactDOM.render(<Tab />, document.getElementById('root'));
