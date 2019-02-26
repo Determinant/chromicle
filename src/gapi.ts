@@ -436,7 +436,8 @@ export class GCalendar {
         return results;
     }
 
-    async sync() {
+    async sync(): Promise<boolean> {
+        let changed = false;
         try {
             let token = await this.token;
             let r = await getEvents(this.calId, token, this.syncToken);
@@ -446,15 +447,24 @@ export class GCalendar {
                 e.start = new Date(e.start.dateTime);
                 e.end = new Date(e.end.dateTime);
                 if (e.status === 'confirmed')
+                {
                     this.addEvent(e);
+                    changed = true;
+                }
                 else if (e.status === 'cancelled')
+                {
                     this.removeEvent(e);
+                    changed = true;
+                }
             });
+            if (this.syncToken !== r.nextSyncToken)
+                changed = true;
             this.syncToken = r.nextSyncToken;
+            return changed;
         } catch(err) {
             if (err === GApiError.invalidSyncToken) {
                 this.syncToken = '';
-                this.sync();
+                return this.sync();
             } else throw err;
         }
     }
@@ -518,10 +528,12 @@ export class GCalendar {
         }
         else
         {
-            console.log(`cache hit`);
-            if (sync) await this.sync();
+            let changed = false;
+            if (sync)
+                changed = await this.sync();
             let events = await this.getCachedEvents({ start, end });
-            return { events, changed: false };
+            console.log(`cache hit sync:${sync} changed:${changed}`);
+            return { events, changed };
         }
     }
 }

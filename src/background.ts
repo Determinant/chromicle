@@ -135,7 +135,7 @@ async function getCalEvents(id: string, start: Date, end: Date) {
     let gcal = getCalData(id);
     try {
         let res = await gcal.getEvents(new Date(start), new Date(end));
-        dirtyCalData = res.changed;
+        dirtyCalData = dirtyCalData || res.changed;
         return res.events;
     } catch(err) {
         handleGApiError(id, err);
@@ -192,7 +192,7 @@ async function pollSync() {
             console.log(`cannot sync calendar ${id}`);
         }));
     }
-    await Promise.all(pms);
+    (await Promise.all(pms)).forEach(b => b && (dirtyCalData = true));
     /* update the tracked graph data */
     await updateMainGraphData();
     pms = [];
