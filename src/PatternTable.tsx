@@ -11,6 +11,8 @@ import TablePagination from '@material-ui/core/TablePagination';
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteOutlined';
 import Popover from '@material-ui/core/Popover';
 import MaterialColorPicker from 'react-material-color-picker';
+import { SlideDown } from 'react-slidedown';
+import 'react-slidedown/lib/slidedown.css';
 
 import { CalendarField, EventField } from './RegexField';
 import { theme, defaultChartColor } from './theme';
@@ -186,6 +188,7 @@ class PatternTable extends React.Component<PatternTableProps> {
         rows.flat();
 
         return (
+            <SlideDown className={'my-dropdown-slidedown'}>
             <div className={classes.patternTableWrapper}>
                 <Popover
                     id="colorPicker"
@@ -239,7 +242,9 @@ class PatternTable extends React.Component<PatternTableProps> {
                         nextIconButtonProps={{'aria-label': 'Next Page'}}
                         onChangePage={this.handleChangePage}
                         onChangeRowsPerPage={this.handleChangeRowsPerPage} />
-            </div>);
+            </div>
+            </SlideDown>
+        );
     }
 }
 

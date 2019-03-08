@@ -10,6 +10,7 @@ import Tab, { TabProps } from '@material-ui/core/Tab';
 import { LinkProps } from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import { HashRouter as Router, RouteComponentProps, withRouter, Route, Link, Redirect, Switch } from "react-router-dom";
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 
 import { theme } from './theme';
 import Logo from './Logo';
@@ -33,13 +34,34 @@ const styles = (theme: Theme) => ({
         display: 'inline-block'
     },
     appBarSpacer: theme.mixins.toolbar,
-    content: {
+    contentWrapper: {
+        position: 'relative' as 'relative',
         flexGrow: 1,
         padding: theme.spacing.unit * 3,
         overflow: 'auto',
     },
+    content: {
+        position: 'absolute' as 'absolute',
+        left: theme.spacing.unit * 3,
+        right: theme.spacing.unit * 3,
+        paddingBottom: theme.spacing.unit * 3,
+    },
     indicator: {
         backgroundColor: theme.palette.primary.contrastText
+    },
+    fadeEnter: {
+        opacity: 0.001
+    },
+    fadeEnterActive: {
+        opacity: 1,
+        transition: 'opacity 300ms ease-in'
+    },
+    fadeExit: {
+        opacity: 1
+    },
+    fadeExitActive: {
+        opacity: 0.001,
+        transition: 'opacity 300ms ease-in'
     }
 });
 
@@ -51,8 +73,13 @@ interface DashboardTabsProps extends RouteComponentProps {
         toolbar: string,
         title: string,
         indicator: string,
-        content: string
-    };
+        content: string,
+        contentWrapper: string,
+        fadeEnter: string,
+        fadeEnterActive: string,
+        fadeExit: string,
+        fadeExitActive: string,
+    }
 }
 
 class DashboardTabs extends React.Component<DashboardTabsProps> {
@@ -60,7 +87,7 @@ class DashboardTabs extends React.Component<DashboardTabsProps> {
         this.props.history.push(currentTab);
     }
     render() {
-        const { classes } = this.props;
+        const { classes, location } = this.props;
         return (
             <div className={classes.root}>
                 <AppBar
@@ -80,11 +107,28 @@ class DashboardTabs extends React.Component<DashboardTabsProps> {
                     </Toolbar>
                 </AppBar>
                 <CssBaseline />
-                <main className={classes.content}>
+                <main className={classes.contentWrapper}>
                     <div className={classes.appBarSpacer} />
-                    <Route exact path="/settings" component={Settings} />
-                    <Route exact path="/analyze" component={Analyze} />
-                    <Route exact path="/" render={() => <Redirect to="/settings" />}/>
+                    <TransitionGroup>
+                        <CSSTransition
+                                key={location.pathname}
+                                timeout={{ enter: 300, exit: 300 }}
+                                classNames={{
+                                    enter: classes.fadeEnter,
+                                    enterActive: classes.fadeEnterActive,
+                                    exit: classes.fadeExit,
+                                    exitActive: classes.fadeExitActive
+                                }}>
+                            <div className={classes.content}>
+                            <Switch location={location}>
+                            {console.log(location)}
+                            <Route exact path="/settings" component={Settings} />
+                            <Route exact path="/analyze" component={Analyze} />
+                            <Route exact path="/" render={() => <Redirect to="/settings" />}/>
+                            </Switch>
+                            </div>
+                        </CSSTransition>
+                    </TransitionGroup>
                 </main>
             </div>
         );

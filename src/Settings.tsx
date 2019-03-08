@@ -20,7 +20,9 @@ import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { getColorFamily } from 'materialcolorize'
+import { getColorFamily } from 'materialcolorize';
+import { SlideDown } from 'react-slidedown';
+import 'react-slidedown/lib/slidedown.css';
 
 import PatternTable from './PatternTable';
 import Snackbar, { SnackbarVariant } from './Snackbar';
@@ -463,19 +465,21 @@ class Settings extends React.Component<SettingsProps> {
                            <STableCell className={classes.tableContent} style={{paddingRight: 0}}>
                                {(this.state.isLoggedIn &&
                                 <div className={classNames(classes.calendarList, classes.list)}>
-                               <List disablePadding>
+                                <SlideDown className={'my-dropdown-slidedown'}>
+                                <List disablePadding>
                                    {Object.keys(this.state.calendars).sort().map(id =>
-                                       <CompactListItem
-                                           key={id}
-                                           onClick={() => this.toggleCalendar(id)}
-                                           disableGutters
-                                           dense button >
-                                       <Checkbox
-                                           checked={this.state.calendars[id].enabled}
-                                           disableRipple />
-                                       <ListItemText primary={this.state.calendars[id].name} />
-                                       </CompactListItem>)}
-                               </List></div>) || 'Please Login.'}
+                                        <CompactListItem
+                                            key={id}
+                                            onClick={() => this.toggleCalendar(id)}
+                                            disableGutters
+                                            dense button >
+                                        <Checkbox
+                                            checked={this.state.calendars[id].enabled}
+                                            disableRipple />
+                                        <ListItemText primary={this.state.calendars[id].name} />
+                                        </CompactListItem>)}
+                                </List>
+                                </SlideDown></div>) || 'Please Login.'}
                            </STableCell>
                        </TableRow>
                        <TableRow>
