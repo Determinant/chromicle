@@ -16,6 +16,7 @@ import { theme } from './theme';
 import Logo from './Logo';
 import Analyze from './Analyze';
 import Settings from './Settings';
+import About from './About';
 
 const styles = (theme: Theme) => ({
     root: {
@@ -103,6 +104,7 @@ class DashboardTabs extends React.Component<DashboardTabsProps> {
                             onChange={this.handleChangeTab}>
                             <Tab label="Settings" {...{component: Link, to: "/settings"} as any} value="/settings" />
                             <Tab label="Analyze" {...{component: Link, to: "/analyze"} as any} value="/analyze" />
+                            <Tab label="About" {...{component: Link, to: "/about"} as any} value="/about" />
                         </Tabs>
                     </Toolbar>
                 </AppBar>
@@ -124,6 +126,7 @@ class DashboardTabs extends React.Component<DashboardTabsProps> {
                             {console.log(location)}
                             <Route exact path="/settings" component={Settings} />
                             <Route exact path="/analyze" component={Analyze} />
+                            <Route exact path="/about" component={About} />
                             <Route exact path="/" render={() => <Redirect to="/settings" />}/>
                             </Switch>
                             </div>

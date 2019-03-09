@@ -1,7 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Theme, withStyles, StyleRules } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import FormGroup from '@material-ui/core/FormGroup';
