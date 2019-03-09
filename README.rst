@@ -1,7 +1,8 @@
 Chromicle
 ---------
 
-Work in progress. Will be release on Chrome Web Store when stable.
+Download from Chrome Web Store:
+https://chrome.google.com/webstore/detail/chromicle/hefhoflmbnacapleebeomfamabdgkcaj
 
 Try it out
 ==========
