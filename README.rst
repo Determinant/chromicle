@@ -21,3 +21,6 @@ Screenshots
 
 .. image:: https://github.com/Determinant/chromicle/raw/master/screenshots/screenshot2.png
    :scale: 100%
+
+.. image:: https://github.com/Determinant/chromicle/raw/master/screenshots/screenshot3.png
+   :scale: 100%
