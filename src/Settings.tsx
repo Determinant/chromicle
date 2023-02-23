@@ -89,7 +89,7 @@ type TrackedPeriodInputProps = {
 
 class TrackedPeriodInput extends React.Component<TrackedPeriodInputProps> {
     valueOnChange = (old: DurationFlat, onChange: (d: DurationFlat) => void) => (
-        (event: React.ChangeEvent<HTMLSelectElement>) => {
+        (event: React.ChangeEvent<HTMLInputElement>) => {
             onChange({ value: event.target.value, unit: old.unit});
         }
     );
@@ -133,19 +133,19 @@ class TrackedPeriodInput extends React.Component<TrackedPeriodInputProps> {
         return (
             <span>
                 <TextField
-                    inputProps={{ style: TrackedPeriodInput.styles.periodName } as React.CSSProperties}
+                    inputProps={TrackedPeriodInput.styles.periodName}
                     value={name}
                     onChange={event => nameOnChange(event.target.value)}/>:
                 from <TextField
                     error={TrackedPeriodInput.toValue(fromDuration.value) === null}
-                    inputProps={{ style: TrackedPeriodInput.styles.periodValue } as React.CSSProperties}
+                    inputProps={TrackedPeriodInput.styles.periodValue}
                     value={fromDuration.value}
                     onChange={this.valueOnChange(fromDuration, fromOnChange)} />
                 <Select value={fromDuration.unit}
                     onChange={this.unitOnChange(fromDuration, fromOnChange)}>{units}</Select> ago
                 to <TextField
                     error={TrackedPeriodInput.toValue(toDuration.value) === null}
-                    inputProps={{style: TrackedPeriodInput.styles.periodValue} as React.CSSProperties}
+                    inputProps={TrackedPeriodInput.styles.periodValue}
                     value={toDuration.value}
                     onChange={this.valueOnChange(toDuration, toOnChange)} />
                 <Select value={toDuration.unit}
@@ -260,7 +260,7 @@ class Settings extends React.Component<SettingsProps> {
     }
 
     async loadAll(reloadAll = false): Promise<void> {
-        await new Promise(resolver => (this.setState({ calendarsLoading: true }, resolver)));
+        await new Promise<void>(resolver => (this.setState({ calendarsLoading: true }, resolver)));
 
         try {
             let pm_colors = this.msgClient.sendMsg(

@@ -18,7 +18,7 @@ import moment from 'moment';
 
 const styles = (theme: Theme): StyleRules => ({
     content: {
-        padding: theme.spacing.unit * 1,
+        padding: theme.spacing(1),
         overflow: 'auto',
     },
     buttons: {
@@ -27,7 +27,7 @@ const styles = (theme: Theme): StyleRules => ({
         lineHeight: '48px'
     },
     buttonSpacer: {
-        marginBottom: theme.spacing.unit * 2,
+        marginBottom: theme.spacing(2),
     },
     loading: {
         textAlign: 'center'
@@ -85,7 +85,7 @@ class _Tab extends React.Component<TabProps> {
                 disabled={this.state.loading}
                 style={{float: 'right'}}
                 onClick={() => (
-                    new Promise(resolver => (
+                    new Promise<void>(resolver => (
                         this.setState({ loading: true }, resolver)))
                         .then(() => this.loadGraphData(true))
                         .then(() => this.setState({ loading: false }))

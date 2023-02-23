@@ -30,8 +30,8 @@ async function _getAuthToken(interactive = false): Promise<string> {
 }
 
 function _removeCachedAuthToken(token: string) {
-    return new Promise(resolver =>
-        chrome.identity.removeCachedAuthToken({ token }, () => resolver()));
+    return new Promise<void>(resolver =>
+        chrome.identity.removeCachedAuthToken({ token }, resolver));
 }
 
 export class Auth {
@@ -368,7 +368,7 @@ export class GCalendar {
         let ks = r.start;
         let ke = r.end;
         let t = this.cache.length;
-        let keys = new Set();
+        let keys: Set<number> = new Set();
         for (let i = ks; i <= ke; i++)
         {
             keys.add(i);

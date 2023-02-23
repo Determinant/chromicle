@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 
 const styles = (theme: Theme): StyleRules => ({
     infoField: {
-        fontWeight: theme.typography.fontWeightMedium,
+        fontWeight: 400,//theme.typography.fontWeightMedium,
         paddingRight: 14,
     },
     body: {

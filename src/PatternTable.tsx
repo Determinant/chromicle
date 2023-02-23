@@ -94,8 +94,8 @@ function NameField(props: NameFieldProps) {
 
 const patternHead: {label: string, elem: any}[] = [
     {label: "Name", elem: withStyles(nameFieldstyles)(NameField)},
-    {label: "Calendar", elem: withTheme()(CalendarField)},
-    {label: "Event", elem: withTheme()(EventField)}];
+    {label: "Calendar", elem: withTheme(CalendarField)},
+    {label: "Event", elem: withTheme(EventField)}];
 
 type PatternTableProps = {
     classes: {
@@ -240,7 +240,7 @@ class PatternTable extends React.Component<PatternTableProps> {
                         page={page}
                         backIconButtonProps={{'aria-label': 'Previous Page'}}
                         nextIconButtonProps={{'aria-label': 'Next Page'}}
-                        onChangePage={this.handleChangePage}
+                        onPageChange={this.handleChangePage}
                         onChangeRowsPerPage={this.handleChangeRowsPerPage} />
             </div>
             </SlideDown>

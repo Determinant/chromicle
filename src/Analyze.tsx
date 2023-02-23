@@ -27,7 +27,7 @@ const defaultChartData = [] as PatternGraphData[];
 
 const styles = (theme: Theme) => ({
     buttonSpacer: {
-        marginBottom: theme.spacing.unit * 4,
+        marginBottom: theme.spacing(4),
     },
 });
 
@@ -197,7 +197,7 @@ class Analyze extends React.Component<AnalyzeProps> {
         const { classes } = this.props;
 
         return (
-            <Grid container spacing={16} style={{minWidth: 700}}>
+            <Grid container spacing={2} style={{minWidth: 700}}>
                 <AlertDialog
                     title={this.state.dialogMsg.title}
                     message={this.state.dialogMsg.message}
@@ -208,7 +208,7 @@ class Analyze extends React.Component<AnalyzeProps> {
                     open={this.state.snackBarOpen}
                     variant={this.state.snackBarVariant}
                     onClose={this.handleSnackbarClose}/>
-                <Grid item container md={6} xs={12} spacing={16}>
+                <Grid item container md={6} xs={12} spacing={2}>
                     <Grid item xs={12}>
                             <Typography variant="h6" component="h1" gutterBottom>
                                 Analyzed Events
@@ -241,7 +241,7 @@ class Analyze extends React.Component<AnalyzeProps> {
                             </div>
                         </FormGroup>
                         <div className={classes.buttonSpacer} />
-                        <Grid container spacing={16}>
+                        <Grid container spacing={2}>
                             <Grid item lg={4} xs={12}>
                                 <FormGroup>
                                     <Button variant="contained" color="primary" onClick={this.loadDefault}>Load Default</Button>

@@ -282,7 +282,7 @@ type DoublePieChartProps = {
 
 function DoublePieChart(props: DoublePieChartProps) {
     return (
-    <Grid container spacing={16}>
+    <Grid container spacing={2}>
       <Grid item md={12} sm={6} xs={12}>
       <DoughnutChart height={300} data={props.patternGraphData} />
       </Grid>

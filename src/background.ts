@@ -203,7 +203,7 @@ async function pollSync() {
         pms.push(saveCachedCals().then(() => dirtyCalData = false));
     await Promise.all(pms);
     /* setup the next loop */
-    return new Promise(resolver => (
+    return new Promise<void>(resolver => (
         window.setTimeout(() => { resolver(); pollSync();}, 10000)
     ));
 }

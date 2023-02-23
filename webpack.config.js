@@ -35,7 +35,7 @@ module.exports = (env, argv) => {
                     test: /\.css$/,
                     use: ["style-loader", "css-loader"]
                 },
-                { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' }
+                { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader' }
             ]
         },
         plugins: [
@@ -54,15 +54,13 @@ module.exports = (env, argv) => {
                 template: "./src/tab.html",
                 filename: "./tab.html"
             }),
-            new CopyWebpackPlugin([
-                {from:'./public/', to:'./'}
-            ]),
-            new CopyWebpackPlugin([
+            new CopyWebpackPlugin({patterns: [
+                {from:'./public/', to:'./'},
                 {
                     from: prodMode ? './manifest.prod.json' : './manifest.dev.json',
                     to: './manifest.json'
                 }
-            ]),
+            ]}),
         ],
         //optimization: prodMode ? ({
         //    splitChunks: {
